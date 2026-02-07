@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Spec Refiner"
+  short_description: "Refine project plans via structured Q&A"
+  default_prompt: "Use $project-spec-refiner to turn my plan into an implementable spec."

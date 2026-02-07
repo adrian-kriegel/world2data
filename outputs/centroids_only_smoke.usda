@@ -1,0 +1,137 @@
+#usda 1.0
+(
+    endTimeCode = 0
+    metersPerUnit = 1
+    startTimeCode = 0
+    upAxis = "Y"
+)
+
+def Xform "World"
+{
+    def Scope "Scene"
+    {
+        custom int world2data:frameIndex = 0
+        custom double world2data:frameTimestampS = 0
+
+        def Scope "Objects"
+        {
+            prepend rel world2data:objects = [
+                </World/Scene/Objects/person_1>,
+                </World/Scene/Objects/cup_1>,
+            ]
+
+            def Xform "person_1"
+            {
+                custom string world2data:label = "person"
+                custom string world2data:trackId = "person-1"
+            }
+
+            def Xform "cup_1"
+            {
+                custom string world2data:label = "cup"
+                custom string world2data:trackId = "cup-1"
+            }
+        }
+
+        def Scope "Relations"
+        {
+            prepend rel world2data:relations = </World/Scene/Relations/person_drinks_from_cup_0>
+
+            def Scope "person_drinks_from_cup_0"
+            {
+                custom string world2data:objectLabel = "cup"
+                custom string world2data:predicate = "drinks_from"
+                custom string world2data:subjectLabel = "person"
+            }
+        }
+
+        def Scope "MotionSuggestions"
+        {
+            prepend rel world2data:motionSuggestions = [
+                </World/Scene/MotionSuggestions/person>,
+                </World/Scene/MotionSuggestions/cup>,
+            ]
+
+            def Scope "person"
+            {
+                custom float3 world2data:drift = (0, 0, 0)
+                custom string world2data:label = "person"
+                custom string world2data:motionHint = "fast"
+            }
+
+            def Scope "cup"
+            {
+                custom float3 world2data:drift = (0, 0, 0)
+                custom string world2data:label = "cup"
+                custom string world2data:motionHint = "slow"
+            }
+        }
+    }
+
+    def Scope "ParticleCentroids"
+    {
+        prepend rel world2data:itemCentroids = [
+            </World/ParticleCentroids/n_1>,
+            </World/ParticleCentroids/n_2>,
+            </World/ParticleCentroids/n_3>,
+            </World/ParticleCentroids/n_4>,
+            </World/ParticleCentroids/n_5>,
+            </World/ParticleCentroids/n_6>,
+        ]
+
+        def Xform "n_1"
+        {
+            custom string world2data:label = "chair"
+            custom int world2data:particleCount = 461
+            custom string world2data:trackId = "1"
+            double3 xformOp:translate = (-2.703394938191439, -0.40233894224106936, 3.9579855836787514)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+        }
+
+        def Xform "n_2"
+        {
+            custom string world2data:label = "dining table"
+            custom int world2data:particleCount = 186
+            custom string world2data:trackId = "2"
+            double3 xformOp:translate = (-1.9854497912355358, -0.9579078814365984, 3.664895699862352)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+        }
+
+        def Xform "n_3"
+        {
+            custom string world2data:label = "dining table"
+            custom int world2data:particleCount = 459
+            custom string world2data:trackId = "3"
+            double3 xformOp:translate = (-3.6483310836181313, -0.8396569290128888, 5.651481980276594)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+        }
+
+        def Xform "n_4"
+        {
+            custom string world2data:label = "dining table"
+            custom int world2data:particleCount = 296
+            custom string world2data:trackId = "4"
+            double3 xformOp:translate = (-2.4022449281298153, -0.9548140417831303, 3.698340823132388)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+        }
+
+        def Xform "n_5"
+        {
+            custom string world2data:label = "chair"
+            custom int world2data:particleCount = 110
+            custom string world2data:trackId = "5"
+            double3 xformOp:translate = (-2.117891041312818, -0.9933128844746748, 3.8838085365443593)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+        }
+
+        def Xform "n_6"
+        {
+            custom string world2data:label = "chair"
+            custom int world2data:particleCount = 24
+            custom string world2data:trackId = "6"
+            double3 xformOp:translate = (-1.0448725850588871, -0.27889780034109746, 1.8161440808384288)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+        }
+    }
+}
+

@@ -72,3 +72,32 @@ We now have a graph and can look up items which are associated with unexplainabl
 https://arxiv.org/html/2602.04517v1
 https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B?utm_source=chatgpt.com
 https://rerun.io/
+
+## Interface
+
+All compontents read/write openusd. In the initial pipeline stage, the usd contains only reference to the video. 
+Second stage produces stamped point clouds an camera poses and places them in the usd. 
+
+Yolo places stamped 2d detections in the usd. 
+
+A semantic model places relationships between entities. E.g. man drinks from cup at time t 
+
+Particle filter places only the centroids and mean bounding box of all partices (the mean of the bounding_box state, not the bounding box of the cloud of particles) in the usd. 
+
+
+## Particle filter 
+
+A particle filter is used to fuse output from 2d object detection, 3d point cloud generation, camera motion, and semantic scene understanding. Each detected item in the scene is tracked by its own set of particles (effectively its own filter). This is important for the selection process as when selecting the top N particles, this is done on a per-object basis. You cannot compare the weight of "cup 01" and "chair 02", weights are only meaningful in relation to each other. You can compare "particle 170 of cup 01" to "particle 9 of cup 01". 
+
+Each particle describes a hypothesis for an objects state:
+
+x,y,z,bouding_box,mass,velocity3d
+
+For each yolo detection, we try to find the corresponding set of particles (track_id) or multiple if there are multiple matches (e.g. "cup 01" and "cup 02" as yolo outputs only classses).
+
+We can check which "cup" from yolo is "cup 01" by overlaying the back-projected bounding boxes of all particles and seeing where the final score is highest. 
+
+If there is no match, we create a new set of particles, e.g. "cup 03". It is initialized by naively finding the points in the point cloud which are underneath the detection rect. Take the mean of all these points and scatter particles. The bounding box parameter can be deduced by the size of the 2d rect when projected to the given distance with the depth being guessed to roughly match the width/height. 
+
+Selection: When selecting particles, their score comes from the back-projection of the 3d bounding box which is compared to the 2d yolo box, e.g. union over difference. 
+

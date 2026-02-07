@@ -14,20 +14,38 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        runtimeLibs = with pkgs; [
+          stdenv.cc.cc.lib
+          zlib
+          glib.dev
+          glib
+          libxcb
+          libglvnd
+          mesa
+        ];
 
-        python = pkgs.python3.withPackages (_ps: [
-            numpy
-            pytest
+        python = pkgs.python3.withPackages (ps: with ps; [
+          numpy
+          openusd
+          pytest
         ]);
 
       in {
         devShell = pkgs.mkShell {
-          packages = [ python ];
+          packages = with pkgs; [
+            python
+
+            # for usdview
+            openusd
+          ];
 
           shellHook = ''
-            # IMPORTANT
-            # required for python to find libstdc++ etc.
-            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${pkgs.stdenv.cc.cc.lib}/lib/:${pkgs.zlib}/lib/:${pkgs.glib.dev}/lib/:${pkgs.glib}/lib/
+            # required for pip packages to find libstdc++
+            export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath runtimeLibs}:$LD_LIBRARY_PATH
+            # expose host GPU driver libs inside nix shell (needed for torch CUDA)
+            if [ -d /run/opengl-driver/lib ]; then
+              export LD_LIBRARY_PATH=/run/opengl-driver/lib:$LD_LIBRARY_PATH
+            fi
 
             # So local imports like `python -m world2data` resolve in the repo.
             export PYTHONPATH=$PYTHONPATH:$(pwd)

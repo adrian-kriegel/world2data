@@ -34,4 +34,41 @@ All tied together with a particle filter:
 
 Each *new* object detection spawns a new particle. Motion model and particle evolution is applied, then particles are sampled using cost function. 
 
+## Idea
 
+
+LFM2.5‑VL generates scene description (structured)
+    - what objects this scene contains 
+    - relationships "person drinks from mug" 
+
+SLAM first to get camera motion from images and set a coordinate frame
+Use Yolo + 3D estimation to find objects 
+map them to 3D world (SLAM) coordinates 
+find the objects mentioned by LFM before 
+
+track each item using a particle filter 
+LFM suggests a motion model for each particle 
+
+Correlate the things found by Yolo with the object descriptions. 
+
+The output should be
+    - list of items that exist in the entire video and where in 3D space (initial condition)
+    - list of actions that happen e.g.
+        - "door opens at time t" (e.g. from LFM)
+        - "cup vanishes at time t" (should be there according to PF but isn't found)
+        - "person leaves room at time t" (e.g. from LFM)
+
+We now have a graph and can look up items which are associated with unexplainable things, like the cup vanishing. The cup node is linked to the person node, we can collect all the cups actions and persons actions from the graph and get 
+
+
+"cup seen first at x,y,z" 
+"person drinks from cup at time t" 
+"person leaves the room"
+"cup expected at x,y,z but not found" 
+
+
+## Resources 
+
+https://arxiv.org/html/2602.04517v1
+https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B?utm_source=chatgpt.com
+https://rerun.io/

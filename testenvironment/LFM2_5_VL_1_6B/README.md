@@ -47,3 +47,12 @@ This folder contains a simple setup to test the `LiquidAI/LFM2.5-VL-1.6B` model.
     ```
 
 The model will download (the first time), process the image defined in the config, and print the description.
+
+## Running with Video
+
+1.  **Place your video file** (e.g., `my_video.mp4`) in the `inputs/videos` folder.
+2.  **Run the video script:**
+    ```bash
+    python run_video.py
+    ```
+    The script automatically picks the first video found in that folder, extracts 5 evenly spaced frames, and asks the model to describe the video.

@@ -11,7 +11,7 @@ dependencies = [
     "huggingface-hub[torch]>=0.22",
     "matplotlib>=3.10.8",
     "open3d>=0.19.0",
-    "opencv-python>=4.13.0.92",
+    "opencv-contrib-python>=4.13.0.92",
     "pyglet<2",
     "python-dotenv>=1.2.1",
     "rerun-sdk>=0.29.1",
@@ -25,7 +25,6 @@ dependencies = [
     "ultralytics>=8.4.12",
     "usd-core>=25.11",
 ]
-
 [[tool.uv.index]]
 name = "pytorch-cu121"
 url = "https://download.pytorch.org/whl/cu121"
@@ -34,6 +33,36 @@ explicit = true
 [tool.uv.sources]
 torch = { index = "pytorch-cu121" }
 torchvision = { index = "pytorch-cu121" }
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
+]
+vision = [
+  "accelerate>=0.30",
+  "opencv-contrib-python>=4.9",
+  "pillow>=10.0",
+  "torch>=2.2",
+  "transformers>=4.45",
+  "ultralytics>=8.3",
+]
+openusd = [
+  "usd-core>=25.11",
+]
+all = [
+  "pytest>=8.0",
+  "accelerate>=0.30",
+  "opencv-contrib-python>=4.9",
+  "pillow>=10.0",
+  "torch>=2.2",
+  "transformers>=4.45",
+  "ultralytics>=8.3",
+  "usd-core>=25.11",
+]
+
+[project.scripts]
+world2data = "world2data.__main__:main"
+world2data-calibration = "world2data.calibration:main"
 
 [dependency-groups]
 dev = [

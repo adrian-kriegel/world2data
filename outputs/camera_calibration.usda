@@ -1,0 +1,42 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "World"
+{
+    def Scope "W2D"
+    {
+        def Scope "Sensors"
+        {
+            def Camera "CalibrationCamera"
+            {
+                custom float[] w2d:distortionCoeffs = [-0.049717795, 3.3233325, 0.007849815, 0.0015653751, -26.97176]
+                custom string w2d:distortionModel = "opencv_plumb_bob"
+                custom int w2d:imageHeight = 720
+                custom int w2d:imageWidth = 1280
+                custom matrix3d w2d:intrinsicMatrix = ( (1057.009360525334, 0, 623.0083341343283), (0, 1073.1818871412167, 342.4242267996558), (0, 0, 1) )
+                custom string w2d:producedByRunId = "20260208T095321Z"
+            }
+        }
+
+        def Scope "Provenance"
+        {
+            def Scope "runs"
+            {
+                def Scope "n_20260208T095321Z"
+                {
+                    custom string w2d:component = "recon.calibration"
+                    custom string w2d:modelName = "opencv_charuco"
+                    custom string w2d:modelVersion = "4.13.0"
+                    custom string w2d:params = '{"board_squares_x": 11, "board_squares_y": 8, "dictionary": "DICT_4X4_50", "frame_step": 2, "marker_mm": 11.0, "max_frames": 0, "min_charuco_corners": 12, "square_mm": 15.0, "video": "res/camera_calibration.mp4"}'
+                    custom string w2d:runId = "20260208T095321Z"
+                    custom string w2d:timestampIso8601 = "2026-02-08T09:53:22.112707+00:00"
+                }
+            }
+        }
+    }
+}
+

@@ -285,6 +285,15 @@ A minimal CI step should verify:
   - `string w2d:approvedBy` (optional)
   - `string w2d:approvedAt` (optional)
 
+### 12.6 Perception YOLO (`25_yolo_run_<RUNID>.usda/.usdc`)
+- `/World/W2D/Observations/YOLO/**` raw 2D detections per frame
+- provenance
+
+### 12.7 Particle Filter Tracking (`30_tracks_run_<RUNID>.usda/.usdc`)
+- consumes calibration + camera poses + YOLO + stamped point clouds
+- writes only centroid trajectory + mean bounding box dimensions per track
+- provenance
+
 ---
 
 ## 13. Operational Workflow (How to “merge automatically”)
@@ -307,7 +316,109 @@ A minimal CI step should verify:
 
 ---
 
-## 15. Quick Reference (Do / Don’t)
+## 15. Concrete Schemas (Current Prototype)
+
+### 15.1 Calibration Intrinsics Schema (Input to Particle Filter)
+- Layer role: reconstruction/calibration
+- Prim path: `/World/W2D/Sensors/CalibrationCamera` (`Camera`)
+- Required attributes:
+  - `matrix3d w2d:intrinsicMatrix`
+  - `int w2d:imageWidth`
+  - `int w2d:imageHeight`
+  - `string w2d:distortionModel`
+  - `float[] w2d:distortionCoeffs`
+  - `string w2d:producedByRunId`
+- Pose requirement:
+  - calibration layer must **not** author camera world pose; intrinsics only.
+
+### 15.2 Camera Pose Frames Schema (Input to Particle Filter)
+- Layer role: reconstruction/camera motion
+- Scope root: `/World/W2D/Sensors/CameraPoses/Frames`
+- Per-frame prim: `/World/W2D/Sensors/CameraPoses/Frames/f_<FRAME>`
+- Required attributes per frame:
+  - `int w2d:frameIndex`
+  - `double w2d:timestampSec`
+  - `matrix3d w2d:rotationMatrix`
+  - `float3 w2d:translation`
+  - `string w2d:poseConvention = "world_to_camera"`
+  - `string w2d:producedByRunId`
+- Semantics:
+  - `rotationMatrix` and `translation` encode `x_cam = R * x_world + t`.
+
+### 15.3 YOLO Raw Observations Schema (Input to Particle Filter)
+- Layer role: perception
+- Scope roots:
+  - `/World/W2D/Observations/YOLO`
+  - `/World/W2D/Observations/YOLO/Frames`
+- Per-frame prim: `/World/W2D/Observations/YOLO/Frames/f_<FRAME>`
+- Required per-frame attributes:
+  - `int w2d:frameIndex`
+  - `double w2d:timestampSec`
+  - `int w2d:imageWidth`
+  - `int w2d:imageHeight`
+  - `string[] w2d:labels`
+  - `int[] w2d:classIds`
+  - `float[] w2d:scores`
+  - `float4[] w2d:boxesXYXY` (`[xMin, yMin, xMax, yMax]` pixels)
+  - `int w2d:detectionCount`
+  - `string w2d:producedByRunId`
+- Optional detection child prims (equivalent source of truth):
+  - `/World/W2D/Observations/YOLO/Frames/f_<FRAME>/det_<IDX>`
+  - `int w2d:classId`, `string w2d:class`, `float w2d:confidence`, `float4 w2d:bboxXYXY`
+
+### 15.4 Stamped Point Cloud Frames Schema (Input to Particle Filter, New)
+- Layer role: reconstruction/depth
+- Scope root: `/World/W2D/Reconstruction/PointCloudFrames`
+- Per-frame prim: `/World/W2D/Reconstruction/PointCloudFrames/f_<FRAME>`
+- Required attributes per frame:
+  - `int w2d:frameIndex`
+  - `double w2d:timestampSec`
+  - `float3[] w2d:points` (world coordinates, meters)
+  - `string w2d:producedByRunId`
+- Optional for very large clouds:
+  - `asset w2d:pointsAsset` (external file, e.g. PLY/PCD), with local cache strategy documented by producer.
+
+### 15.5 Particle Filter Adapter Input Contract
+- Required composed inputs:
+  - calibration intrinsics layer (15.1)
+  - camera pose frames layer (15.2)
+  - YOLO observations layer (15.3)
+  - stamped point cloud layer (15.4)
+- Join key:
+  - `w2d:frameIndex` across camera poses, YOLO frames, and point-cloud frames.
+- Time:
+  - `w2d:timestampSec` used for `dt`; stage `timeCodesPerSecond` provides fallback.
+
+### 15.6 Particle Filter Tracks Schema (Output)
+- Layer role: tracking
+- Scope roots:
+  - `/World/W2D/Entities/Objects`
+  - `/World/W2D/Tracks/ParticleFilter`
+- Per-entity prim: `/World/W2D/Entities/Objects/<TRACK_ID_SAFE>`
+  - `string w2d:uid` (stable track id)
+  - `string w2d:class`
+  - `rel w2d:track -> /World/W2D/Tracks/ParticleFilter/<TRACK_ID_SAFE>`
+  - `string w2d:producedByRunId`
+- Per-track prim: `/World/W2D/Tracks/ParticleFilter/<TRACK_ID_SAFE>` (`Xform`)
+  - `xformOp:translate` (time-sampled centroid in world coordinates)
+  - `float3 w2d:meanBoundingBox` (time-sampled; mean PF box dimensions in meters)
+  - `int w2d:particleCount` (time-sampled)
+  - `string w2d:trackId`
+  - `string w2d:class`
+  - `string w2d:classHistoryJson` (label-count map)
+  - `string w2d:producedByRunId`
+- Tracking scope summary:
+  - `/World/W2D/Tracks/ParticleFilter`
+  - `int w2d:trackCount`
+  - `int w2d:processedFrameCount`
+  - `string w2d:component = "tracking.particle_filter"`
+  - `string w2d:producedByRunId`
+- Provenance:
+  - `/World/W2D/Provenance/runs/<RUNID>` with required run metadata fields.
+
+---
+
+## 16. Quick Reference (Do / Don’t)
 
 **Do**
 - One output layer per component per run

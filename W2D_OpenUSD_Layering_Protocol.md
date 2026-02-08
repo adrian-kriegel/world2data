@@ -13,7 +13,7 @@ This protocol assumes a pipeline that ingests **video**, estimates **camera moti
 2. **Deterministic composition.** Given the same set of layers, the composed stage must be identical.
 3. **Merge‑safe collaboration.** Multiple producers can write outputs without overwriting each other.
 4. **Provenance‑first.** Every authored result must be traceable to a pipeline run + model version + parameters.
-5. **Data scalability.** Heavy payloads (video, dense point clouds) remain external or behind payloads.
+5. **Data scalability.** Heavy payloads (video, dense point clouds, meshes) must remain external and be referenced by `asset` paths (never inlined arrays in protocol layers).
 
 ---
 
@@ -156,6 +156,11 @@ Videos and point clouds must be stored as external files and referenced via `ass
 - Prefer **relative asset paths** from the layer location.
 - Never write absolute machine paths into committed layers.
 
+### 6.4 Large-data authoring ban
+- Protocol layers must not author large binary-like arrays (for example `float3[] w2d:points` for dense clouds).
+- Large geometry/depth content must be externalized and referenced via `asset` attributes.
+- Layers may store compact metadata only (timestamps, frame indices, counts, hashes, bounds, provenance).
+
 ---
 
 ## 7. Conflict Policy (What happens if two layers disagree?)
@@ -252,6 +257,7 @@ A minimal CI step should verify:
 4. All external `asset` paths resolve (relative) in the repo layout
 5. Cameras have `xformOpOrder` when using xformOps
 6. Provenance run record exists for each producer layer
+7. No dense point-cloud arrays are authored inside protocol layers (asset refs only)
 
 ---
 
@@ -264,6 +270,7 @@ A minimal CI step should verify:
 
 ### 12.2 Reconstruction (`20_recon_run_<RUNID>.usdc`)
 - `/World/W2D/Sensors/**` cameras with time‑sampled poses
+- point-cloud/depth data referenced via `asset` attributes (no inlined dense arrays)
 - optional cached USD payload under `/World/W2D/Reconstruction/**`
 - provenance
 
@@ -290,7 +297,7 @@ A minimal CI step should verify:
 - provenance
 
 ### 12.7 Particle Filter Tracking (`30_tracks_run_<RUNID>.usda/.usdc`)
-- consumes calibration + camera poses + YOLO + stamped point clouds
+- consumes calibration + camera poses + YOLO + stamped point-cloud asset references
 - writes only centroid trajectory + mean bounding box dimensions per track
 - provenance
 
@@ -310,9 +317,9 @@ A minimal CI step should verify:
 
 - Start with **vanilla prims** (`Scope`, `Xform`, `Camera`) plus `w2d:*` attributes.
 - Add typed schemas later (USD plugin) once the contract stabilizes.
-- If point clouds are huge, prefer:
-  - external authoritative files (`.ply/.pcd/.las`) +
-  - an optional USD cache payload for visualization.
+- Keep point clouds/depth external by default:
+  - authoritative files (`.ply/.pcd/.las`) referenced via `asset`
+  - optional USD cache payload for visualization/performance.
 
 ---
 
@@ -366,24 +373,28 @@ A minimal CI step should verify:
   - `/World/W2D/Observations/YOLO/Frames/f_<FRAME>/det_<IDX>`
   - `int w2d:classId`, `string w2d:class`, `float w2d:confidence`, `float4 w2d:bboxXYXY`
 
-### 15.4 Stamped Point Cloud Frames Schema (Input to Particle Filter, New)
+### 15.4 Stamped Point Cloud Frames Index Schema (Input to Particle Filter)
 - Layer role: reconstruction/depth
 - Scope root: `/World/W2D/Reconstruction/PointCloudFrames`
 - Per-frame prim: `/World/W2D/Reconstruction/PointCloudFrames/f_<FRAME>`
 - Required attributes per frame:
   - `int w2d:frameIndex`
   - `double w2d:timestampSec`
-  - `float3[] w2d:points` (world coordinates, meters)
+  - `asset w2d:pointsAsset` (external file URI/path, world coordinates in meters)
   - `string w2d:producedByRunId`
-- Optional for very large clouds:
-  - `asset w2d:pointsAsset` (external file, e.g. PLY/PCD), with local cache strategy documented by producer.
+- Recommended compact metadata:
+  - `string w2d:pointsFormat` (e.g., `ply`, `pcd`, `las`)
+  - `int w2d:pointCount`
+  - `string w2d:pointsSha256` (optional integrity check)
+- Forbidden:
+  - `float3[] w2d:points` or other dense in-layer point payloads.
 
 ### 15.5 Particle Filter Adapter Input Contract
 - Required composed inputs:
   - calibration intrinsics layer (15.1)
   - camera pose frames layer (15.2)
   - YOLO observations layer (15.3)
-  - stamped point cloud layer (15.4)
+  - stamped point cloud index layer with `w2d:pointsAsset` (15.4)
 - Join key:
   - `w2d:frameIndex` across camera poses, YOLO frames, and point-cloud frames.
 - Time:
@@ -432,6 +443,7 @@ A minimal CI step should verify:
 - Let two producers author the same property on the same prim
 - Store absolute file paths in committed layers
 - Put large binary data directly into the assembly stage
+- Author dense point-cloud arrays inside protocol layers
 
 ---
 

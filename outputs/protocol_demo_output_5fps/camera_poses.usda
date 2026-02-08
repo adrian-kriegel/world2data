@@ -1,0 +1,1142 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    endTimeCode = 109
+    metersPerUnit = 1
+    startTimeCode = 0
+    timeCodesPerSecond = 5.001000964287738
+    upAxis = "Y"
+)
+
+def Xform "World"
+{
+    def Scope "W2D"
+    {
+        def Scope "Sensors"
+        {
+            def Scope "CameraPoses"
+            {
+                def Scope "Frames"
+                {
+                    def Scope "f_000000"
+                    {
+                        custom int w2d:frameIndex = 0
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.18169423937797546, -0.2085718810558319, -0.9611676335334778), (-0.07132583856582642, -0.9717534780502319, 0.22446565330028534), (-0.9805213809013367, 0.10903197526931763, 0.16236059367656708) )
+                        custom double w2d:timestampSec = 0
+                        custom float3 w2d:translation = (0.8413051, -0.38117293, -0.13758339)
+                    }
+
+                    def Scope "f_000001"
+                    {
+                        custom int w2d:frameIndex = 1
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.1667521595954895, -0.20854143798351288, -0.9636815786361694), (-0.0802578553557396, -0.9713323712348938, 0.22408492863178253), (-0.9823681116104126, 0.11443157494068146, 0.14596083760261536) )
+                        custom double w2d:timestampSec = 0.1999599694423224
+                        custom float3 w2d:translation = (0.7790507, -0.35307965, -0.064630814)
+                    }
+
+                    def Scope "f_000002"
+                    {
+                        custom int w2d:frameIndex = 2
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.14621059596538544, -0.20812514424324036, -0.9670943021774292), (-0.10231244564056396, -0.9696787595748901, 0.22406208515167236), (-0.9836860299110413, 0.13142205774784088, 0.12118423730134964) )
+                        custom double w2d:timestampSec = 0.3999199388846448
+                        custom float3 w2d:translation = (0.6854436, -0.3012046, 0.041879173)
+                    }
+
+                    def Scope "f_000003"
+                    {
+                        custom int w2d:frameIndex = 3
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.11618386209011078, -0.19829407334327698, -0.9734293818473816), (-0.11401404440402985, -0.9709113240242004, 0.21143019199371338), (-0.9864962100982666, 0.13522811233997345, 0.09093362838029861) )
+                        custom double w2d:timestampSec = 0.5998799083269671
+                        custom float3 w2d:translation = (0.57954377, -0.2487344, 0.15211783)
+                    }
+
+                    def Scope "f_000004"
+                    {
+                        custom int w2d:frameIndex = 4
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.07404109835624695, -0.18285904824733734, -0.9804351329803467), (-0.1215239018201828, -0.9739040732383728, 0.19088968634605408), (-0.9896769523620605, 0.1329643726348877, 0.050652533769607544) )
+                        custom double w2d:timestampSec = 0.7998398777692896
+                        custom float3 w2d:translation = (0.46157262, -0.2046342, 0.24714348)
+                    }
+
+                    def Scope "f_000005"
+                    {
+                        custom int w2d:frameIndex = 5
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.021801801398396492, -0.16393086314201355, -0.9864794015884399), (-0.1303248405456543, -0.9778253436088562, 0.16541603207588196), (-0.9911323189735413, 0.13182392716407776, 0.0007438212633132935) )
+                        custom double w2d:timestampSec = 0.999799847211612
+                        custom float3 w2d:translation = (0.31942657, -0.16643324, 0.30749482)
+                    }
+
+                    def Scope "f_000006"
+                    {
+                        custom int w2d:frameIndex = 6
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.024394063279032707, -0.14694099128246307, -0.9888444542884827), (-0.13844282925128937, -0.9801046848297119, 0.14222697913646698), (-0.9900700449943542, 0.1334289163351059, -0.04425165057182312) )
+                        custom double w2d:timestampSec = 1.1997598166539343
+                        custom float3 w2d:translation = (0.16674265, -0.11540273, 0.34873706)
+                    }
+
+                    def Scope "f_000007"
+                    {
+                        custom int w2d:frameIndex = 7
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.06643771380186081, -0.13354657590389252, -0.9887604117393494), (-0.14352695643901825, -0.981943666934967, 0.12292246520519257), (-0.987498939037323, 0.13378699123859406, -0.0844046026468277) )
+                        custom double w2d:timestampSec = 1.3997197860962567
+                        custom float3 w2d:translation = (0.035127815, -0.06049476, 0.37686282)
+                    }
+
+                    def Scope "f_000008"
+                    {
+                        custom int w2d:frameIndex = 8
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.12031148374080658, -0.08833897113800049, -0.9888520836830139), (-0.14990761876106262, -0.9862598180770874, 0.06982539594173431), (-0.9812741875648499, 0.13984555006027222, -0.13185939192771912) )
+                        custom double w2d:timestampSec = 1.599679755538579
+                        custom float3 w2d:translation = (-0.088776864, -0.03676262, 0.40496647)
+                    }
+
+                    def Scope "f_000009"
+                    {
+                        custom int w2d:frameIndex = 9
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.20316526293754578, -0.04356307163834572, -0.978124737739563), (-0.16830290853977203, -0.9854413270950317, 0.008792445063591003), (-0.9643911123275757, 0.16263145208358765, -0.20761632919311523) )
+                        custom double w2d:timestampSec = 1.7996397249809015
+                        custom float3 w2d:translation = (-0.20891212, -0.025541777, 0.42945564)
+                    }
+
+                    def Scope "f_000010"
+                    {
+                        custom int w2d:frameIndex = 10
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.3047514855861664, -0.006099209189414978, -0.9526551365852356), (-0.2068655639886856, -0.9761138558387756, -0.060072317719459534), (-0.9297484159469604, 0.2150287926197052, -0.2989232838153839) )
+                        custom double w2d:timestampSec = 1.999599694423224
+                        custom float3 w2d:translation = (-0.3477029, -0.001502808, 0.45785886)
+                    }
+
+                    def Scope "f_000011"
+                    {
+                        custom int w2d:frameIndex = 11
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.4005081057548523, -0.00034312903881073, -0.9163609147071838), (-0.23468303680419922, -0.9664910435676575, -0.10232973098754883), (-0.885812520980835, 0.25596335530281067, -0.38722094893455505) )
+                        custom double w2d:timestampSec = 2.1995596638655464
+                        custom float3 w2d:translation = (-0.48850706, 0.019234713, 0.4885609)
+                    }
+
+                    def Scope "f_000012"
+                    {
+                        custom int w2d:frameIndex = 12
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.48877546191215515, 0.027745425701141357, -0.8720496296882629), (-0.24515734612941742, -0.9547296762466431, -0.16810885071754456), (-0.8368445038795471, 0.29580962657928467, -0.46027255058288574) )
+                        custom double w2d:timestampSec = 2.3995196333078685
+                        custom float3 w2d:translation = (-0.63002026, 0.023280382, 0.48873353)
+                    }
+
+                    def Scope "f_000013"
+                    {
+                        custom int w2d:frameIndex = 13
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.5508628487586975, 0.03826101869344711, -0.8339617848396301), (-0.2491031289100647, -0.9457001090049744, -0.2082047164440155), (-0.7962732315063477, 0.32225167751312256, -0.5117506980895996) )
+                        custom double w2d:timestampSec = 2.599479602750191
+                        custom float3 w2d:translation = (-0.7464237, 0.025950762, 0.46542424)
+                    }
+
+                    def Scope "f_000014"
+                    {
+                        custom int w2d:frameIndex = 14
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.592893123626709, 0.038248706609010696, -0.8047435879707336), (-0.26552072167396545, -0.9337392449378967, -0.24016636610031128), (-0.7597756385803223, 0.35610413551330566, -0.5435317158699036) )
+                        custom double w2d:timestampSec = 2.7994395721925134
+                        custom float3 w2d:translation = (-0.8388985, 0.026702214, 0.42985308)
+                    }
+
+                    def Scope "f_000015"
+                    {
+                        custom int w2d:frameIndex = 15
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6318078637123108, 0.036298349499702454, -0.7747052311897278), (-0.26924556493759155, -0.9262396693229675, -0.2632713317871094), (-0.7267817258834839, 0.37474337220191956, -0.575659990310669) )
+                        custom double w2d:timestampSec = 2.999399541634836
+                        custom float3 w2d:translation = (-0.9159154, 0.014870653, 0.39711154)
+                    }
+
+                    def Scope "f_000016"
+                    {
+                        custom int w2d:frameIndex = 16
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6648111939430237, 0.02952210232615471, -0.7470581531524658), (-0.26648736000061035, -0.9240072965621948, -0.27388831973075867), (-0.6976091861724854, 0.3810000419616699, -0.606536328792572) )
+                        custom double w2d:timestampSec = 3.199359511077158
+                        custom float3 w2d:translation = (-0.97556657, -0.008956937, 0.36654305)
+                    }
+
+                    def Scope "f_000017"
+                    {
+                        custom int w2d:frameIndex = 17
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6875609159469604, 0.0019774287939071655, -0.7260780930519104), (-0.2695091664791107, -0.9276567697525024, -0.2581140100955963), (-0.6732770800590515, 0.3731924891471863, -0.6373536586761475) )
+                        custom double w2d:timestampSec = 3.3993194805194804
+                        custom float3 w2d:translation = (-0.99927545, -0.012839026, 0.33938935)
+                    }
+
+                    def Scope "f_000018"
+                    {
+                        custom int w2d:frameIndex = 18
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6983235478401184, -0.05682364106178284, -0.7141008973121643), (-0.2822670340538025, -0.9377748370170593, -0.20172934234142303), (-0.6572754979133606, 0.3422815799713135, -0.6711230874061584) )
+                        custom double w2d:timestampSec = 3.599279449961803
+                        custom float3 w2d:translation = (-0.9737559, 0.023427593, 0.31789884)
+                    }
+
+                    def Scope "f_000019"
+                    {
+                        custom int w2d:frameIndex = 19
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.703983724117279, -0.09748886525630951, -0.7037256956100464), (-0.2860507667064667, -0.9456697702407837, -0.1552467793226242), (-0.6506575345993042, 0.31020864844322205, -0.6931489706039429) )
+                        custom double w2d:timestampSec = 3.7992394194041252
+                        custom float3 w2d:translation = (-0.9107507, 0.07762413, 0.3040124)
+                    }
+
+                    def Scope "f_000020"
+                    {
+                        custom int w2d:frameIndex = 20
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.7110228538513184, -0.11136698722839355, -0.6945950984954834), (-0.2753746211528778, -0.952936053276062, -0.12902632355690002), (-0.6481165885925293, 0.2826448380947113, -0.707675576210022) )
+                        custom double w2d:timestampSec = 3.999199388846448
+                        custom float3 w2d:translation = (-0.84521705, 0.11398218, 0.3030124)
+                    }
+
+                    def Scope "f_000021"
+                    {
+                        custom int w2d:frameIndex = 21
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.7081373333930969, -0.14325760304927826, -0.6916016936302185), (-0.2765473425388336, -0.9574846625328064, -0.08470360189676285), (-0.650724470615387, 0.25093477964401245, -0.7170974016189575) )
+                        custom double w2d:timestampSec = 4.19915935828877
+                        custom float3 w2d:translation = (-0.7657945, 0.14308497, 0.32340816)
+                    }
+
+                    def Scope "f_000022"
+                    {
+                        custom int w2d:frameIndex = 22
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6994361281394958, -0.18859124183654785, -0.6897319555282593), (-0.2835843861103058, -0.9585334062576294, -0.0253472700715065), (-0.6568604111671448, 0.21293790638446808, -0.7234490513801575) )
+                        custom double w2d:timestampSec = 4.399119327731093
+                        custom float3 w2d:translation = (-0.6575058, 0.18851736, 0.35548052)
+                    }
+
+                    def Scope "f_000023"
+                    {
+                        custom int w2d:frameIndex = 23
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6742692589759827, -0.21375824511051178, -0.7071520090103149), (-0.279193252325058, -0.9597796201705933, 0.023784726858139038), (-0.684003472328186, 0.18119896948337555, -0.7066161632537842) )
+                        custom double w2d:timestampSec = 4.599079297173415
+                        custom float3 w2d:translation = (-0.5414033, 0.20942162, 0.3938331)
+                    }
+
+                    def Scope "f_000024"
+                    {
+                        custom int w2d:frameIndex = 24
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6333615183830261, -0.22216221690177917, -0.7414869070053101), (-0.26531651616096497, -0.9620716571807861, 0.061655402183532715), (-0.7272955775260925, 0.15738096833229065, -0.6680221557617188) )
+                        custom double w2d:timestampSec = 4.799039266615737
+                        custom float3 w2d:translation = (-0.4411936, 0.21228468, 0.42460325)
+                    }
+
+                    def Scope "f_000025"
+                    {
+                        custom int w2d:frameIndex = 25
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.5805245637893677, -0.2339179962873459, -0.780126690864563), (-0.25594061613082886, -0.9617403149604797, 0.097868911921978), (-0.7731986045837402, 0.1426018476486206, -0.6177736520767212) )
+                        custom double w2d:timestampSec = 4.99899923605806
+                        custom float3 w2d:translation = (-0.36070338, 0.20412253, 0.44430655)
+                    }
+
+                    def Scope "f_000026"
+                    {
+                        custom int w2d:frameIndex = 26
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.5111017823219299, -0.25097063183784485, -0.8224406838417053), (-0.25416237115859985, -0.9579176902770996, 0.13437853753566742), (-0.8216341733932495, 0.14006160199642181, -0.5527874231338501) )
+                        custom double w2d:timestampSec = 5.198959205500382
+                        custom float3 w2d:translation = (-0.27476168, 0.18617818, 0.45024732)
+                    }
+
+                    def Scope "f_000027"
+                    {
+                        custom int w2d:frameIndex = 27
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.4283515095973094, -0.2734382921973918, -0.8605420530393366), (-0.22083738354783455, -0.955771571982433, 0.19368333735384627), (-0.876048178546627, 0.10725416689945935, -0.46961133157367907) )
+                        custom double w2d:timestampSec = 5.398919174942704
+                        custom float3 w2d:translation = (-0.17823108, 0.15652582, 0.43042406)
+                    }
+
+                    def Scope "f_000028"
+                    {
+                        custom int w2d:frameIndex = 28
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.3567617665986416, -0.27294615453066523, -0.892903845515282), (-0.1858107348598435, -0.9579076944819872, 0.21840789662452392), (-0.9156382283910579, 0.08810216917801172, -0.3921260960756) )
+                        custom double w2d:timestampSec = 5.598879144385027
+                        custom float3 w2d:translation = (-0.08320583, 0.10715324, 0.3960958)
+                    }
+
+                    def Scope "f_000029"
+                    {
+                        custom int w2d:frameIndex = 29
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.28932005240312747, -0.262289619968811, -0.919977086830154), (-0.16003948691868924, -0.9613464989635172, 0.2236328111292498), (-0.9433235326596324, 0.08270832406826419, -0.32017032536096496) )
+                        custom double w2d:timestampSec = 5.798839113827349
+                        custom float3 w2d:translation = (0.0060649663, 0.055856865, 0.36028227)
+                    }
+
+                    def Scope "f_000030"
+                    {
+                        custom int w2d:frameIndex = 30
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.22972525002789965, -0.25733227904527517, -0.9376605128009425), (-0.14633280859825754, -0.9626288601945355, 0.22794042047161026), (-0.9612998935543887, 0.08508890835085722, -0.2589652889372843) )
+                        custom double w2d:timestampSec = 5.998799083269672
+                        custom float3 w2d:translation = (0.08705326, 0.02976911, 0.3449033)
+                    }
+
+                    def Scope "f_000031"
+                    {
+                        custom int w2d:frameIndex = 31
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.18880492305644067, -0.26200744184311897, -0.9454385946737329), (-0.1367495616416462, -0.9614042808726899, 0.23872774072745884), (-0.9715616391847229, 0.08445848458627356, -0.21751904732284083) )
+                        custom double w2d:timestampSec = 6.198759052711994
+                        custom float3 w2d:translation = (0.15050972, 0.009925069, 0.34805682)
+                    }
+
+                    def Scope "f_000032"
+                    {
+                        custom int w2d:frameIndex = 32
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.16648683381378176, -0.26288619413216374, -0.9496331303376753), (-0.13114809399820185, -0.9609862457110918, 0.2428739252205083), (-0.9768286260361798, 0.0843007022519571, -0.1946274851705234) )
+                        custom double w2d:timestampSec = 6.398719022154316
+                        custom float3 w2d:translation = (0.20401719, -0.013577745, 0.35705373)
+                    }
+
+                    def Scope "f_000033"
+                    {
+                        custom int w2d:frameIndex = 33
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.15447526128303493, -0.26365867462015075, -0.9514937519674029), (-0.13401866808585508, -0.9606314524814153, 0.24419897962378648), (-0.9788248622073084, 0.0900231881561522, -0.18355025953948848) )
+                        custom double w2d:timestampSec = 6.598678991596639
+                        custom float3 w2d:translation = (0.25856158, -0.03805258, 0.36192843)
+                    }
+
+                    def Scope "f_000034"
+                    {
+                        custom int w2d:frameIndex = 34
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.14860983842545478, -0.2552817944673241, -0.9549829451637312), (-0.13296524975116775, -0.9625538636640728, 0.23659565440881747), (-0.9798346621627346, 0.0920080985049118, -0.17689220132358074) )
+                        custom double w2d:timestampSec = 6.798638961038961
+                        custom float3 w2d:translation = (0.32355377, -0.081090815, 0.36727235)
+                    }
+
+                    def Scope "f_000035"
+                    {
+                        custom int w2d:frameIndex = 35
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.1453745501209723, -0.2432697167008918, -0.9584849389786593), (-0.13027600071520318, -0.9653262508573448, 0.22525313810414774), (-0.9804836988958417, 0.09226092469556049, -0.17196061076072688) )
+                        custom double w2d:timestampSec = 6.9985989304812835
+                        custom float3 w2d:translation = (0.39637232, -0.12985602, 0.3760973)
+                    }
+
+                    def Scope "f_000036"
+                    {
+                        custom int w2d:frameIndex = 36
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.1477526979437354, -0.23150642307518446, -0.9608162528606322), (-0.12763282542709928, -0.9682237639552094, 0.21374375155451059), (-0.9806426399499909, 0.0912371947798417, -0.17248448659758994) )
+                        custom double w2d:timestampSec = 7.198558899923606
+                        custom float3 w2d:translation = (0.46482545, -0.1817978, 0.3853155)
+                    }
+
+                    def Scope "f_000037"
+                    {
+                        custom int w2d:frameIndex = 37
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.15262412929687222, -0.17710979988781358, -0.9715924498051481), (-0.1184747627536515, -0.9798424530776573, 0.15996794917473753), (-0.9811660550946171, 0.09086369567196415, -0.17039574175989505) )
+                        custom double w2d:timestampSec = 7.398518869365929
+                        custom float3 w2d:translation = (0.50459296, -0.23496056, 0.39443386)
+                    }
+
+                    def Scope "f_000038"
+                    {
+                        custom int w2d:frameIndex = 38
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.1503251849745294, -0.12682514263331932, -0.9798005227907224), (-0.10810984813968771, -0.9874295220249849, 0.11123740926916852), (-0.9827213981551178, 0.08923804507452776, -0.16197430237982288) )
+                        custom double w2d:timestampSec = 7.5984788388082505
+                        custom float3 w2d:translation = (0.5251119, -0.26718163, 0.4056692)
+                    }
+
+                    def Scope "f_000039"
+                    {
+                        custom int w2d:frameIndex = 39
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.14788319110293868, -0.10630450719009797, -0.9827038029318989), (-0.10415524165232064, -0.9900579604843427, 0.09138980458292112), (-0.9835098967948867, 0.08885132835559721, -0.1574041878623282) )
+                        custom double w2d:timestampSec = 7.798438808250573
+                        custom float3 w2d:translation = (0.53503436, -0.28266922, 0.41974628)
+                    }
+
+                    def Scope "f_000040"
+                    {
+                        custom int w2d:frameIndex = 40
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.14344742701208887, -0.09531906407186885, -0.9845747796518336), (-0.10141670365947567, -0.9912727516847973, 0.08118817942630725), (-0.984370081322084, 0.088235061934538, -0.15169240362165246) )
+                        custom double w2d:timestampSec = 7.998398777692896
+                        custom float3 w2d:translation = (0.53719, -0.29121017, 0.42825064)
+                    }
+
+                    def Scope "f_000041"
+                    {
+                        custom int w2d:frameIndex = 41
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.13995052532488864, -0.08725362016735802, -0.9859933419459063), (-0.09904809702236884, -0.9918917593158246, 0.07375054714243329), (-0.9851223893596491, 0.08731522025636952, -0.1474009164864774) )
+                        custom double w2d:timestampSec = 8.198358747135218
+                        custom float3 w2d:translation = (0.537741, -0.30556223, 0.429223)
+                    }
+
+                    def Scope "f_000042"
+                    {
+                        custom int w2d:frameIndex = 42
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.13582041538889988, -0.08202300855221373, -0.98683543869547), (-0.0977340104149906, -0.9925427432410288, 0.06904401088608514), (-0.9858224593454818, 0.08709296104788238, -0.14264849515632533) )
+                        custom double w2d:timestampSec = 8.39831871657754
+                        custom float3 w2d:translation = (0.5278975, -0.31276342, 0.4257294)
+                    }
+
+                    def Scope "f_000043"
+                    {
+                        custom int w2d:frameIndex = 43
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.12447032051922757, -0.07462128205641219, -0.9890385675408147), (-0.09515378152754891, -0.9932676865636739, 0.06294733261796079), (-0.9876747576401947, 0.0862682321558057, -0.1306778056492519) )
+                        custom double w2d:timestampSec = 8.598278686019862
+                        custom float3 w2d:translation = (0.49153706, -0.31294775, 0.41911265)
+                    }
+
+                    def Scope "f_000044"
+                    {
+                        custom int w2d:frameIndex = 44
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.1003310347986476, -0.06802881969144522, -0.9926256509755038), (-0.090430013959245, -0.9941539343264615, 0.05899322089608161), (-0.9908360401155136, 0.0838442965130394, -0.10589636034290831) )
+                        custom double w2d:timestampSec = 8.798238655462185
+                        custom float3 w2d:translation = (0.4314341, -0.3007416, 0.40076503)
+                    }
+
+                    def Scope "f_000045"
+                    {
+                        custom int w2d:frameIndex = 45
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.050514128087791016, -0.06375512306024127, -0.9965215560337859), (-0.07561052143899971, -0.995204357715133, 0.0598066469862569), (-0.9956625238075447, 0.07232547883061595, -0.055276559997287006) )
+                        custom double w2d:timestampSec = 8.998198624904507
+                        custom float3 w2d:translation = (0.34891322, -0.27361646, 0.37874007)
+                    }
+
+                    def Scope "f_000046"
+                    {
+                        custom int w2d:frameIndex = 46
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.008226135606562926, -0.06711348321159381, -0.9972526026597404), (-0.054739826913792554, -0.996012256233947, 0.06745789142915014), (-0.9984592520446302, 0.05512534397900743, 0.004685567795819363) )
+                        custom double w2d:timestampSec = 9.19815859434683
+                        custom float3 w2d:translation = (0.26734877, -0.23898074, 0.3541581)
+                    }
+
+                    def Scope "f_000047"
+                    {
+                        custom int w2d:frameIndex = 47
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.09545713849307084, -0.0913742606034527, -0.9908727589831713), (-0.10508767098169093, -0.9894782480481065, 0.10116808850389011), (-0.9900210118508447, 0.11477149064115712, 0.08498409870414322) )
+                        custom double w2d:timestampSec = 9.398118563789152
+                        custom float3 w2d:translation = (0.19487438, -0.226047, 0.33572122)
+                    }
+
+                    def Scope "f_000048"
+                    {
+                        custom int w2d:frameIndex = 48
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.11991852040405222, -0.0792402501931419, -0.9890103401600382), (-0.10123150904836309, -0.9908589929472754, 0.09128910320746758), (-0.9878992973478845, 0.11225282805664669, 0.11090399092577559) )
+                        custom double w2d:timestampSec = 9.598078533231474
+                        custom float3 w2d:translation = (0.10573297, -0.23258992, 0.32356894)
+                    }
+
+                    def Scope "f_000049"
+                    {
+                        custom int w2d:frameIndex = 49
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.0662352567398886, -0.07260933736785921, -0.9947989681999821), (-0.1269973797004174, -0.9886166941275331, 0.08031841174560883), (-0.9903251794789527, 0.13277446049171918, 0.056341503514605484) )
+                        custom double w2d:timestampSec = 9.798038502673798
+                        custom float3 w2d:translation = (-0.0036868108, -0.24045897, 0.28266272)
+                    }
+
+                    def Scope "f_000050"
+                    {
+                        custom int w2d:frameIndex = 50
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.06895000159311594, -0.0964246673256532, -0.9926205341855678), (-0.1894227708851071, -0.9786497184028264, 0.08162780946780482), (-0.9794425305086895, 0.18311365045598543, -0.08560139438091065) )
+                        custom double w2d:timestampSec = 9.99799847211612
+                        custom float3 w2d:translation = (-0.13302197, -0.2328935, 0.19006206)
+                    }
+
+                    def Scope "f_000051"
+                    {
+                        custom int w2d:frameIndex = 51
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.24026888273594565, -0.11942792345950318, -0.9628165385462815), (-0.2634693233409399, -0.9635033527507709, 0.05351428049816578), (-0.9342261851373664, 0.24150104197049596, -0.2629081394818365) )
+                        custom double w2d:timestampSec = 10.197958441558441
+                        custom float3 w2d:translation = (-0.22453475, -0.2214911, 0.08033785)
+                    }
+
+                    def Scope "f_000052"
+                    {
+                        custom int w2d:frameIndex = 52
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.40420681248868306, -0.1775694114125566, -0.8970852289272487), (-0.4507019931233882, -0.8922871728322144, -0.026645110434108606), (-0.7962904225936595, 0.41530363409233756, -0.4408730496393293) )
+                        custom double w2d:timestampSec = 10.397918411000765
+                        custom float3 w2d:translation = (0.33513755, -0.2524642, 0.44731024)
+                    }
+
+                    def Scope "f_000053"
+                    {
+                        custom int w2d:frameIndex = 53
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.5164465863977461, -0.17203821958459264, -0.838515665670649), (-0.47771055439785737, -0.8709525788654812, -0.11576811078731199), (-0.7106781562432269, 0.4608966095298278, -0.5320865728228358) )
+                        custom double w2d:timestampSec = 10.597878380443086
+                        custom float3 w2d:translation = (0.255666, -0.2798418, 0.2509717)
+                    }
+
+                    def Scope "f_000054"
+                    {
+                        custom int w2d:frameIndex = 54
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6190507615628384, -0.18685487536026912, -0.7627985030407537), (-0.47993813900434545, -0.8588225942756105, -0.1791179080281291), (-0.6216394988354164, 0.4769791246670977, -0.6213335383606484) )
+                        custom double w2d:timestampSec = 10.797838349885408
+                        custom float3 w2d:translation = (0.22669859, -0.2999482, 0.07708328)
+                    }
+
+                    def Scope "f_000055"
+                    {
+                        custom int w2d:frameIndex = 55
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6654435128532977, -0.183115577447828, -0.7230470033744645), (-0.4865194759774536, -0.8417556060599688, -0.2349362284079795), (-0.5654654844045066, 0.5086384252389098, -0.6489961860828916) )
+                        custom double w2d:timestampSec = 10.997798319327732
+                        custom float3 w2d:translation = (0.1348413, -0.31806356, -0.13795482)
+                    }
+
+                    def Scope "f_000056"
+                    {
+                        custom int w2d:frameIndex = 56
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.6832396513171609, -0.1690413971192048, -0.7098020587062179), (-0.4981374756349365, -0.8197800580403098, -0.2843429666273632), (-0.5336731935922447, 0.5485927169823025, -0.6433764595911836) )
+                        custom double w2d:timestampSec = 11.197758288770054
+                        custom float3 w2d:translation = (0.03189998, -0.33241633, -0.32030374)
+                    }
+
+                    def Scope "f_000057"
+                    {
+                        custom int w2d:frameIndex = 57
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.7072093815227312, -0.1378756119739045, -0.6930199129197889), (-0.49720376188384463, -0.7942867223384896, -0.3497150566755603), (-0.5020151744015744, 0.592769081696112, -0.6300290482188181) )
+                        custom double w2d:timestampSec = 11.397718258212375
+                        custom float3 w2d:translation = (-0.08330478, -0.35814822, -0.4831825)
+                    }
+
+                    def Scope "f_000058"
+                    {
+                        custom int w2d:frameIndex = 58
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.7406134040845861, -0.10205540027607579, -0.6637692677919588), (-0.4936505930872291, -0.7531744948466865, -0.43506457649205066), (-0.45556540511273874, 0.6505137406733732, -0.6079636808797805) )
+                        custom double w2d:timestampSec = 11.597678227654699
+                        custom float3 w2d:translation = (-0.23045366, -0.41069442, -0.6494001)
+                    }
+
+                    def Scope "f_000059"
+                    {
+                        custom int w2d:frameIndex = 59
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.7707417787470465, -0.08012961852795036, -0.6315591608959783), (-0.49406543978074197, -0.7006791954851213, -0.5148066478174564), (-0.401025679013077, 0.7094942105317011, -0.5797554371467196) )
+                        custom double w2d:timestampSec = 11.79763819709702
+                        custom float3 w2d:translation = (-0.36469752, -0.47481754, -0.8028743)
+                    }
+
+                    def Scope "f_000060"
+                    {
+                        custom int w2d:frameIndex = 60
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.7977575786225197, -0.07147296460909676, -0.598115200773974), (-0.4874482063163477, -0.659925955608942, -0.5715662147394739), (-0.3538598071001861, 0.7481361899082087, -0.5613632975785978) )
+                        custom double w2d:timestampSec = 11.997598166539344
+                        custom float3 w2d:translation = (-0.44086188, -0.5525511, -0.91225094)
+                    }
+
+                    def Scope "f_000061"
+                    {
+                        custom int w2d:frameIndex = 61
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.8244768491961794, -0.06477288446109455, -0.5611751021798026), (-0.4686455148428926, -0.6321445120353475, -0.616536908912648), (-0.3148972155234693, 0.7714892834607315, -0.5520691124672197) )
+                        custom double w2d:timestampSec = 12.197558135981666
+                        custom float3 w2d:translation = (-0.46878734, -0.6272996, -0.96599454)
+                    }
+
+                    def Scope "f_000062"
+                    {
+                        custom int w2d:frameIndex = 62
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.8438345950047561, -0.06352643768428293, -0.5321257164115406), (-0.4573445181023704, -0.6023667506397288, -0.6540089016253094), (-0.2789776169369227, 0.7956711598025261, -0.5374836894293654) )
+                        custom double w2d:timestampSec = 12.397518105423988
+                        custom float3 w2d:translation = (-0.46774724, -0.69355226, -0.9884108)
+                    }
+
+                    def Scope "f_000063"
+                    {
+                        custom int w2d:frameIndex = 63
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.8557972718859458, -0.079994872417318, -0.5102908316358135), (-0.45289007720438457, -0.5903066952854709, -0.668009465997989), (-0.24771820782517734, 0.803173236882392, -0.5416420050580621) )
+                        custom double w2d:timestampSec = 12.597478074866311
+                        custom float3 w2d:translation = (-0.45318574, -0.74568516, -0.9998296)
+                    }
+
+                    def Scope "f_000064"
+                    {
+                        custom int w2d:frameIndex = 64
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.8678185176202057, -0.12230036417029955, -0.4808781367158027), (-0.45151063532976515, -0.5950641269981404, -0.6646097635676151), (-0.20486346472702127, 0.7937484850268485, -0.5721703187187168) )
+                        custom double w2d:timestampSec = 12.797438044308633
+                        custom float3 w2d:translation = (-0.4414482, -0.7900868, -1.0142188)
+                    }
+
+                    def Scope "f_000065"
+                    {
+                        custom int w2d:frameIndex = 65
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.882897088368283, -0.20457988129747237, -0.4214221493439391), (-0.45076150807633136, -0.6129254393015643, -0.6486628416785419), (-0.12549180938953666, 0.7626322841189527, -0.6340790451158393) )
+                        custom double w2d:timestampSec = 12.997398013750955
+                        custom float3 w2d:translation = (-0.41728953, -0.817778, -1.0529964)
+                    }
+
+                    def Scope "f_000066"
+                    {
+                        custom int w2d:frameIndex = 66
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.8974467355321063, -0.2967599440404856, -0.32482863479995194), (-0.43885241710955863, -0.6399505368087403, -0.6306001405833713), (-0.020655100094246696, 0.7084284021812203, -0.7052895636287531) )
+                        custom double w2d:timestampSec = 13.197357983193278
+                        custom float3 w2d:translation = (-0.35615316, -0.8177903, -1.1183113)
+                    }
+
+                    def Scope "f_000067"
+                    {
+                        custom int w2d:frameIndex = 67
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.22472060503058364, -0.9369534075953865, 0.26967516256217866), (-0.2497140650605993, -0.32258602166653405, -0.9135704496626326), (0.9424999590097513, 0.137986748858744, -0.30641444315471356) )
+                        custom double w2d:timestampSec = 13.3973179526356
+                        custom float3 w2d:translation = (-0.2798687, -0.7808697, -1.1094686)
+                    }
+
+                    def Scope "f_000068"
+                    {
+                        custom int w2d:frameIndex = 68
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.14019532989880218, -0.9384700862249359, 0.3172724431643519), (-0.17115505865404954, -0.3383754263396665, -0.9258985551614556), (0.9757076552825156, 0.0755330349866124, -0.20813595183102954) )
+                        custom double w2d:timestampSec = 13.597277922077922
+                        custom float3 w2d:translation = (-0.21632387, -0.7799134, -1.0800482)
+                    }
+
+                    def Scope "f_000069"
+                    {
+                        custom int w2d:frameIndex = 69
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.06308040554769431, -0.9390738597166628, 0.33894470017000455), (-0.09753353488946805, -0.34332252165250504, -0.9347188345143023), (0.993384970177897, 0.025990317862547577, -0.1133322116178158) )
+                        custom double w2d:timestampSec = 13.797237891520245
+                        custom float3 w2d:translation = (-0.17459868, -0.7763939, -1.0603839)
+                    }
+
+                    def Scope "f_000070"
+                    {
+                        custom int w2d:frameIndex = 70
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.006364265706912947, -0.9365750970076108, 0.3511190193438066), (-0.043620569731204345, -0.3505105270662844, -0.9361552617469896), (0.9989852627003456, -0.00923403899374489, -0.04323531928282999) )
+                        custom double w2d:timestampSec = 13.997197860962567
+                        custom float3 w2d:translation = (-0.14231448, -0.76224214, -1.0293072)
+                    }
+
+                    def Scope "f_000071"
+                    {
+                        custom int w2d:frameIndex = 71
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.03227486885183877, -0.9322021124678904, 0.3617922893355208), (-0.010619118205486399, -0.3614580237221075, -0.9327645017999168), (0.9997446422094787, -0.033763068682734806, 0.0016101664623097416) )
+                        custom double w2d:timestampSec = 14.19715783040489
+                        custom float3 w2d:translation = (-0.12283854, -0.747012, -1.0061036)
+                    }
+
+                    def Scope "f_000072"
+                    {
+                        custom int w2d:frameIndex = 72
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.04684186448322359, -0.9193324602293536, 0.3925370595214809), (0.005144020186666368, -0.39304673365123705, -0.9201869440170024), (0.9992144687379084, -0.04086574217460093, 0.02299858627879182) )
+                        custom double w2d:timestampSec = 14.397117799847212
+                        custom float3 w2d:translation = (-0.10058932, -0.72240514, -0.9911676)
+                    }
+
+                    def Scope "f_000073"
+                    {
+                        custom int w2d:frameIndex = 73
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.05742659986527836, -0.903009640537659, 0.42702441250311907), (0.0216300383087145, -0.42867323743739955, -0.9036452530430498), (0.9984213615676166, -0.04246097632798352, 0.04400523905772666) )
+                        custom double w2d:timestampSec = 14.597077769289534
+                        custom float3 w2d:translation = (-0.079676166, -0.6834224, -0.9681282)
+                    }
+
+                    def Scope "f_000074"
+                    {
+                        custom int w2d:frameIndex = 74
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.11055060703522197, -0.8835681802011952, 0.4567251401303126), (0.08748219106637244, -0.46637231071913726, -0.8808826038014911), (0.9902262261119148, -0.05724068073278245, 0.12862698714381599) )
+                        custom double w2d:timestampSec = 14.797037738731857
+                        custom float3 w2d:translation = (-0.054209698, -0.62478614, -0.90274334)
+                    }
+
+                    def Scope "f_000075"
+                    {
+                        custom int w2d:frameIndex = 75
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.20208307367736444, -0.8614962065243088, 0.4672699988926526), (0.20573705229947825, -0.5037644736532525, -0.8395592813120015), (0.9574951681036142, -0.07336938591691922, 0.2785256149348671) )
+                        custom double w2d:timestampSec = 14.99699770817418
+                        custom float3 w2d:translation = (-0.03497566, -0.56099755, -0.78982997)
+                    }
+
+                    def Scope "f_000076"
+                    {
+                        custom int w2d:frameIndex = 76
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.3237427487412872, -0.8475621150490955, 0.4218272208515152), (0.3641572786731476, -0.5229060761947726, -0.7711832895363806), (0.873747741147222, -0.09583105485427484, 0.4773232325623193) )
+                        custom double w2d:timestampSec = 15.196957677616501
+                        custom float3 w2d:translation = (0.04592298, -0.6017145, -0.6396831)
+                    }
+
+                    def Scope "f_000077"
+                    {
+                        custom int w2d:frameIndex = 77
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.4030979812427597, -0.8963457208522598, 0.1890725496187675), (0.8087755342961043, -0.25149608149122193, 0.5327086096940644), (-0.42935168451040484, 0.36748237269853035, 0.8255906466250863) )
+                        custom double w2d:timestampSec = 15.396917647058824
+                        custom float3 w2d:translation = (0.935467, -2.891022, -1.6370455)
+                    }
+
+                    def Scope "f_000078"
+                    {
+                        custom int w2d:frameIndex = 78
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.24717692191954177, -0.958985816351499, -0.14289905105127623), (-0.033128320083932225, -0.13902624158470048, 0.990361774041052), (-0.9688765142866719, 0.2493648009774107, 0.0025674002028734677) )
+                        custom double w2d:timestampSec = 15.596877616501146
+                        custom float3 w2d:translation = (0.4819862, -2.5583324, -0.302249)
+                    }
+
+                    def Scope "f_000079"
+                    {
+                        custom int w2d:frameIndex = 79
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.23638291686368623, -0.947653821293547, -0.21762921034241), (-0.3344034544809215, -0.13098230546971315, 0.933670790515073), (-0.9122293585128091, 0.29352541074965727, -0.2859168981238913) )
+                        custom double w2d:timestampSec = 15.796837585943468
+                        custom float3 w2d:translation = (0.44425553, -2.5460148, -0.42709205)
+                    }
+
+                    def Scope "f_000080"
+                    {
+                        custom int w2d:frameIndex = 80
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.21185439658469604, -0.9376678769400574, -0.2776366658520264), (-0.5478910465341197, -0.1215564559983395, 0.8281444677623926), (-0.8096678252656966, 0.3274621150294999, -0.48747228600735215) )
+                        custom double w2d:timestampSec = 15.996797555385792
+                        custom float3 w2d:translation = (0.4259374, -2.5631194, -0.51998085)
+                    }
+
+                    def Scope "f_000081"
+                    {
+                        custom int w2d:frameIndex = 81
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.18650827654929755, -0.9323142991742966, -0.31185793600599526), (-0.678918149674381, -0.10731059703100246, 0.7270241425375081), (-0.7104855636368496, 0.3472884852391839, -0.6125478598660076) )
+                        custom double w2d:timestampSec = 16.196757524828115
+                        custom float3 w2d:translation = (0.42513344, -2.5865915, -0.5916667)
+                    }
+
+                    def Scope "f_000082"
+                    {
+                        custom int w2d:frameIndex = 82
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.1690578395243848, -0.9307468553976294, -0.32537854395701205), (-0.7522676995873514, -0.09130214673043902, 0.6525873802761308), (-0.6365506813030131, 0.35530998407260916, -0.6845396958590542) )
+                        custom double w2d:timestampSec = 16.396717494270437
+                        custom float3 w2d:translation = (0.42203248, -2.6041105, -0.652911)
+                    }
+
+                    def Scope "f_000083"
+                    {
+                        custom int w2d:frameIndex = 83
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.15982023967923573, -0.931079256461559, -0.3283593009608842), (-0.8029376791262742, -0.07084138305985303, 0.5919621143595046), (-0.5741729839894381, 0.35831172232839864, -0.7362134732791785) )
+                        custom double w2d:timestampSec = 16.59667746371276
+                        custom float3 w2d:translation = (0.41017818, -2.6078777, -0.71284384)
+                    }
+
+                    def Scope "f_000084"
+                    {
+                        custom int w2d:frameIndex = 84
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.154726404878619, -0.9328025930616208, -0.3266196866180147), (-0.8397609273105252, -0.05002024669909005, 0.541303112098081), (-0.5204698080258777, 0.3580029138163268, -0.775331134267246) )
+                        custom double w2d:timestampSec = 16.79663743315508
+                        custom float3 w2d:translation = (0.4013021, -2.6103122, -0.7653969)
+                    }
+
+                    def Scope "f_000085"
+                    {
+                        custom int w2d:frameIndex = 85
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.1480048077500507, -0.9313374184343447, -0.3330120409914188), (-0.8620932221576233, -0.0434009139787881, 0.505067738758258), (-0.4846163800791236, 0.3618919825207841, -0.796396371025996) )
+                        custom double w2d:timestampSec = 16.996597402597402
+                        custom float3 w2d:translation = (0.39322865, -2.6110694, -0.8037599)
+                    }
+
+                    def Scope "f_000086"
+                    {
+                        custom int w2d:frameIndex = 86
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.1398476086519303, -0.9294254026298545, -0.34148378939206475), (-0.8791243345591436, -0.042141850909645104, 0.4747258507791065), (-0.45561300677955696, 0.366595947342334, -0.8111870357651184) )
+                        custom double w2d:timestampSec = 17.196557372039724
+                        custom float3 w2d:translation = (0.3791067, -2.6029878, -0.82915914)
+                    }
+
+                    def Scope "f_000087"
+                    {
+                        custom int w2d:frameIndex = 87
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.0038115446605946485, -0.9141144711053026, -0.40576356928099067), (-0.9116504027631895, -0.17030542697361284, 0.3747006102338386), (-0.4115998545186145, 0.3683600244982259, -0.8336307836619464) )
+                        custom double w2d:timestampSec = 17.39651734148205
+                        custom float3 w2d:translation = (0.37452742, -2.5781736, -0.839515)
+                    }
+
+                    def Scope "f_000088"
+                    {
+                        custom int w2d:frameIndex = 88
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.0011169009736527267, -0.9176526528731338, -0.39738204133868293), (-0.9034657494289564, -0.1694156361359325, 0.39376148192525373), (-0.4286589809169791, 0.3594608232953602, -0.8288785120952372) )
+                        custom double w2d:timestampSec = 17.59647731092437
+                        custom float3 w2d:translation = (0.36739388, -2.5318124, -0.84526485)
+                    }
+
+                    def Scope "f_000089"
+                    {
+                        custom int w2d:frameIndex = 89
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.041744414501517405, -0.9183987252476502, -0.3943481198051485), (-0.8567686056064886, -0.17050465109053423, 0.48691148004649015), (-0.514079883275442, 0.3581532360299434, -0.7795063539582214) )
+                        custom double w2d:timestampSec = 17.796437280366693
+                        custom float3 w2d:translation = (0.3594829, -2.4665084, -0.8372982)
+                    }
+
+                    def Scope "f_000090"
+                    {
+                        custom int w2d:frameIndex = 90
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.09269767555152077, -0.9231074990145094, -0.3747309968501125), (-0.7868708261990287, -0.16312646968418223, 0.595380329543412), (-0.6103210007430904, 0.34997806579680585, -0.7110787272125871) )
+                        custom double w2d:timestampSec = 17.996397249809014
+                        custom float3 w2d:translation = (0.35732582, -2.3990977, -0.82318527)
+                    }
+
+                    def Scope "f_000091"
+                    {
+                        custom int w2d:frameIndex = 91
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.13235737079898086, -0.9259582015318228, -0.3545363327554289), (-0.6895777763305457, -0.17127926600683716, 0.7038700102462482), (-0.7122844543084206, 0.33743625122862186, -0.6159148554995336) )
+                        custom double w2d:timestampSec = 18.196357219251336
+                        custom float3 w2d:translation = (0.36068934, -2.3545728, -0.7996467)
+                    }
+
+                    def Scope "f_000092"
+                    {
+                        custom int w2d:frameIndex = 92
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.16393249146375938, -0.9213720709338652, -0.35436773707319247), (-0.568430791474596, -0.20548354258284526, 0.7971955123923689), (-0.8061292720558475, 0.33199837327380427, -0.49037733882509915) )
+                        custom double w2d:timestampSec = 18.39631718869366
+                        custom float3 w2d:translation = (0.35577565, -2.3165479, -0.7733143)
+                    }
+
+                    def Scope "f_000093"
+                    {
+                        custom int w2d:frameIndex = 93
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.2218111618717895, -0.901020839261205, -0.3743340942716592), (-0.44142123683353474, -0.24951743968395731, 0.8624178965143893), (-0.8693479143526484, 0.35643397060873544, -0.3425215277743219) )
+                        custom double w2d:timestampSec = 18.596277158135983
+                        custom float3 w2d:translation = (0.34097895, -2.2944896, -0.76542145)
+                    }
+
+                    def Scope "f_000094"
+                    {
+                        custom int w2d:frameIndex = 94
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.27252777295141195, -0.8827555782320541, -0.3837527226055167), (-0.3294494681864157, -0.28908998905956734, 0.8991633623187083), (-0.904002509179282, 0.3713422894110174, -0.212172790178346) )
+                        custom double w2d:timestampSec = 18.796237127578305
+                        custom float3 w2d:translation = (0.3102828, -2.2700253, -0.79903585)
+                    }
+
+                    def Scope "f_000095"
+                    {
+                        custom int w2d:frameIndex = 95
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.2848453330866647, -0.8733096436624628, -0.3966746218143275), (-0.25749594198043607, -0.3288997221966109, 0.909093119998852), (-0.9235834073664806, 0.3609104085090225, -0.13146019466150602) )
+                        custom double w2d:timestampSec = 18.996197097020627
+                        custom float3 w2d:translation = (0.2628843, -2.2364829, -0.8629861)
+                    }
+
+                    def Scope "f_000096"
+                    {
+                        custom int w2d:frameIndex = 96
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.28952416731532526, -0.8663975811703666, -0.40837506601336615), (-0.21668512488398087, -0.3561957163577202, 0.909341516985347), (-0.9327034746608769, 0.35154349182060407, -0.08489266139171177) )
+                        custom double w2d:timestampSec = 19.19615706646295
+                        custom float3 w2d:translation = (0.22100423, -2.2090826, -0.92058116)
+                    }
+
+                    def Scope "f_000097"
+                    {
+                        custom int w2d:frameIndex = 97
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.2946482098308902, -0.8644890060372133, -0.40878881364211134), (-0.2013815953866088, -0.36197894599393304, 0.9107122334089532), (-0.9345087555991579, 0.35048703639961, -0.06766668963635854) )
+                        custom double w2d:timestampSec = 19.39611703590527
+                        custom float3 w2d:translation = (0.19512151, -2.1856267, -0.9639306)
+                    }
+
+                    def Scope "f_000098"
+                    {
+                        custom int w2d:frameIndex = 98
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.27908915489364056, -0.8638146181868522, -0.4211349260507626), (-0.27416548215461145, -0.34867796024867975, 0.8968053302856797), (-0.9204433435630051, 0.3656602745017165, -0.1397429473497933) )
+                        custom double w2d:timestampSec = 19.596077005347595
+                        custom float3 w2d:translation = (0.17930552, -2.1669908, -1.0010085)
+                    }
+
+                    def Scope "f_000099"
+                    {
+                        custom int w2d:frameIndex = 99
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.23020883700520547, -0.86248363622495, -0.4523505550671335), (-0.47446391037268126, -0.30668492149273, 0.8256116540661336), (-0.8502441589379879, 0.4045178604727302, -0.3385664507471817) )
+                        custom double w2d:timestampSec = 19.796036974789917
+                        custom float3 w2d:translation = (0.16757195, -2.1667364, -1.0556538)
+                    }
+
+                    def Scope "f_000100"
+                    {
+                        custom int w2d:frameIndex = 100
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.15435859652174883, -0.866231485871314, -0.4763191128203041), (-0.7235889649866574, -0.22939637055437295, 0.6516179639816432), (-0.6728606314530778, 0.4449354385130825, -0.5915975329954235) )
+                        custom double w2d:timestampSec = 19.99599694423224
+                        custom float3 w2d:translation = (0.17545702, -2.2053518, -1.1077182)
+                    }
+
+                    def Scope "f_000101"
+                    {
+                        custom int w2d:frameIndex = 101
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (-0.030507881216715292, -0.8766511755243787, -0.48119419465641056), (-0.9425882437805317, -0.13544309200897858, 0.3066577268320794), (-0.3333785881619648, 0.4624241070977391, -0.8220870438687063) )
+                        custom double w2d:timestampSec = 20.19595691367456
+                        custom float3 w2d:translation = (0.17445357, -2.2343552, -1.1514722)
+                    }
+
+                    def Scope "f_000102"
+                    {
+                        custom int w2d:frameIndex = 102
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.09054853314397494, -0.890233562386791, -0.44747843450366326), (-0.9905621210587899, -0.031123456967690904, -0.13854637958425967), (0.10976659690241887, 0.45526868533129405, -0.8839002299648588) )
+                        custom double w2d:timestampSec = 20.395916883116882
+                        custom float3 w2d:translation = (0.1677433, -2.303604, -1.1792196)
+                    }
+
+                    def Scope "f_000103"
+                    {
+                        custom int w2d:frameIndex = 103
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.18479374035593849, -0.9097043971240137, -0.3727226053373747), (-0.8321617735286166, 0.05755802370229416, -0.5529100804163272), (0.5240996631686999, 0.41199179153725757, -0.7458188196197798) )
+                        custom double w2d:timestampSec = 20.595876852559208
+                        custom float3 w2d:translation = (0.15988965, -2.392325, -1.1818596)
+                    }
+
+                    def Scope "f_000104"
+                    {
+                        custom int w2d:frameIndex = 104
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.2384795418862388, -0.9266717856557406, -0.29131147996928736), (-0.5553401130878904, 0.11605878663436994, -0.8241034480001832), (0.7972494370709877, 0.35796174295240085, -0.4869998741671476) )
+                        custom double w2d:timestampSec = 20.79583682200153
+                        custom float3 w2d:translation = (0.18350987, -2.453591, -1.1334444)
+                    }
+
+                    def Scope "f_000105"
+                    {
+                        custom int w2d:frameIndex = 105
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.2631550982596132, -0.9353021177644034, -0.2388019455320585), (-0.27700560143534964, 0.16405866058609953, -0.9473327600230707), (0.924691936082814, 0.3153229100741776, -0.21573148080234042) )
+                        custom double w2d:timestampSec = 20.99579679144385
+                        custom float3 w2d:translation = (0.20399599, -2.5109124, -1.0767289)
+                    }
+
+                    def Scope "f_000106"
+                    {
+                        custom int w2d:frameIndex = 106
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.27237104476189583, -0.9435955712865324, -0.19096953826063132), (-0.1058425643782193, 0.16815621954813098, -0.9809880004262008), (0.9571172358617286, 0.2871282052569584, -0.05410869672702272) )
+                        custom double w2d:timestampSec = 21.195756760886173
+                        custom float3 w2d:translation = (0.23136863, -2.5390723, -1.012339)
+                    }
+
+                    def Scope "f_000107"
+                    {
+                        custom int w2d:frameIndex = 107
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.27622312727444404, -0.9161833098292002, -0.29049505953025395), (-0.18478742575324728, 0.24604361535521246, -0.9515407514267614), (0.9432196028818137, 0.3162868234928564, -0.10133451345244933) )
+                        custom double w2d:timestampSec = 21.395716730328495
+                        custom float3 w2d:translation = (0.25032508, -2.571012, -0.9612036)
+                    }
+
+                    def Scope "f_000108"
+                    {
+                        custom int w2d:frameIndex = 108
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.27665292651969636, -0.9238123486525518, -0.2650469078598478), (-0.13160902416471137, 0.23683080283381608, -0.9626112494903322), (0.9517613431895634, 0.3013331706957164, -0.056093628570403356) )
+                        custom double w2d:timestampSec = 21.595676699770816
+                        custom float3 w2d:translation = (0.26160166, -2.5862195, -0.9221168)
+                    }
+
+                    def Scope "f_000109"
+                    {
+                        custom int w2d:frameIndex = 109
+                        custom string w2d:poseConvention = "world_to_camera"
+                        custom string w2d:producedByRunId = "20260208T112735Z"
+                        custom matrix3d w2d:rotationMatrix = ( (0.27663290339584434, -0.9266300491324406, -0.2539673681304073), (-0.11095580925440353, 0.23169985548885827, -0.9662988333063908), (0.9542603381022448, 0.29562092593279915, -0.03877292822442268) )
+                        custom double w2d:timestampSec = 21.795636669213142
+                        custom float3 w2d:translation = (0.26772794, -2.596063, -0.89793074)
+                    }
+                }
+            }
+        }
+
+        def Scope "Provenance"
+        {
+            def Scope "runs"
+            {
+                def Scope "n_20260208T112735Z"
+                {
+                    custom string w2d:component = "reconstruction.camera_poses"
+                    custom string w2d:gitCommit = "unknown"
+                    custom string w2d:modelName = "world2data_demo_converter"
+                    custom string w2d:modelVersion = "0.1"
+                    custom string w2d:params = '{"frame_count": 110}'
+                    custom string w2d:runId = "20260208T112735Z"
+                    custom string w2d:timestampIso8601 = "2026-02-08T11:27:35.973436+00:00"
+                }
+            }
+        }
+    }
+}
+

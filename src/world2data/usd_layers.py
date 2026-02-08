@@ -526,9 +526,12 @@ class USDLayerWriter:
                 pp.CreateAttribute("w2d:frameIndex", Sdf.ValueTypeNames.Int, custom=True).Set(frame_idx)
                 ts = cam.get("timestamp_sec", frame_idx / fps)
                 pp.CreateAttribute("w2d:timestampSec", Sdf.ValueTypeNames.Double, custom=True).Set(float(ts))
-                # Store rotation (3x3) and translation (3,)
+                # Store rotation (3x3) and translation (3,) -- protocol §15.2
                 R = pose[:3, :3]
                 t = pose[:3, 3]
+                pp.CreateAttribute("w2d:rotationMatrix", Sdf.ValueTypeNames.Matrix3d, custom=True).Set(
+                    Gf.Matrix3d(*R.flatten().tolist())
+                )
                 pp.CreateAttribute("w2d:translation", Sdf.ValueTypeNames.Float3, custom=True).Set(
                     Gf.Vec3f(*t.tolist())
                 )
@@ -692,7 +695,7 @@ class USDLayerWriter:
                 "w2d:bboxMax", Sdf.ValueTypeNames.Float3, custom=True
             ).Set(Gf.Vec3f(*[float(v) for v in entity.bbox_3d_max]))
 
-            # Track prim (time-sampled positions)
+            # Track prim (time-sampled positions + renderable geometry)
             if entity.frame_positions:
                 track_path = f"/World/W2D/Tracks/{safe_name}"
                 track_xform = UsdGeom.Xform.Define(stage, track_path)
@@ -707,6 +710,43 @@ class USDLayerWriter:
                         Gf.Vec3d(*[float(v) for v in pos]),
                         float(frame_idx),
                     )
+
+                # Renderable cube so track is visible in usdview
+                track_cube = UsdGeom.Cube.Define(stage, f"{track_path}/TrackShape")
+                # Size from entity bbox
+                bbox_size = [
+                    abs(entity.bbox_3d_max[i] - entity.bbox_3d_min[i])
+                    for i in range(3)
+                ]
+                mean_size = max(sum(bbox_size) / 3.0, 0.1)
+                track_cube.GetSizeAttr().Set(mean_size)
+                scale = [max(s / mean_size, 0.01) for s in bbox_size]
+                track_cube.AddScaleOp().Set(Gf.Vec3f(*[float(s) for s in scale]))
+
+                # Color-code by class for visual distinction in usdview
+                _CLASS_COLORS = {
+                    "person": (1.0, 0.55, 0.0),
+                    "chair": (0.15, 0.78, 0.78),
+                    "table": (0.15, 0.31, 0.86),
+                    "cup": (0.78, 0.78, 0.15),
+                    "laptop": (0.55, 0.0, 1.0),
+                    "tv": (0.86, 0.15, 0.15),
+                    "book": (0.4, 0.7, 0.3),
+                    "bottle": (0.2, 0.6, 0.8),
+                    "keyboard": (0.7, 0.3, 0.7),
+                    "mouse": (0.9, 0.4, 0.6),
+                    "couch": (0.3, 0.5, 0.2),
+                    "bed": (0.6, 0.3, 0.1),
+                }
+                color = _CLASS_COLORS.get(
+                    entity.entity_class.lower(),
+                    (0.7, 0.7, 0.7),
+                )
+                track_cube.GetDisplayColorAttr().Set(
+                    [Gf.Vec3f(*[float(c) for c in color])]
+                )
+                # Semi-transparent to not occlude point cloud
+                track_cube.GetDisplayOpacityAttr().Set([0.4])
 
                 # Relationship to entity
                 track_prim.CreateRelationship(
@@ -1107,59 +1147,92 @@ def write_point_lineage(
         ts = fd.get("timestamp_sec", idx / 30.0)
         asset = f"frame_{idx:06d}.ply"
         n = pts.shape[0] if pts is not None else 0
+        if n == 0:
+            continue
 
-        # Get active tracks for this frame
-        frame_tracks = pf_frame_tracks.get(idx, [])
-
+        # --- Vectorized UID generation (batch hash) ---
+        uids = []
         for j in range(n):
-            # Deterministic point UID
             uid_seed = f"{run_id}:{idx}:{asset}:{j}"
-            uid = hashlib.sha256(uid_seed.encode()).hexdigest()[:16]
-            rows["point_uid"].append(uid)
-            rows["frame_index_origin"].append(idx)
-            rows["timestamp_sec_origin"].append(ts)
-            rows["source_points_asset"].append(asset)
+            uids.append(hashlib.sha256(uid_seed.encode()).hexdigest()[:16])
+        rows["point_uid"].extend(uids)
+        rows["frame_index_origin"].extend([idx] * n)
+        rows["timestamp_sec_origin"].extend([ts] * n)
+        rows["source_points_asset"].extend([asset] * n)
 
-            px, py, pz = float(pts[j, 0]), float(pts[j, 1]), float(pts[j, 2])
-            rows["x"].append(px)
-            rows["y"].append(py)
-            rows["z"].append(pz)
+        # --- Vectorized coordinates ---
+        rows["x"].extend(pts[:, 0].astype(float).tolist())
+        rows["y"].extend(pts[:, 1].astype(float).tolist())
+        rows["z"].extend(pts[:, 2].astype(float).tolist())
 
-            if colors is not None and j < colors.shape[0]:
-                c = np.clip(colors[j], 0, 1)
-                rows["r"].append(float(c[0]))
-                rows["g"].append(float(c[1]))
-                rows["b"].append(float(c[2]))
-            else:
-                rows["r"].append(0.5)
-                rows["g"].append(0.5)
-                rows["b"].append(0.5)
+        # --- Vectorized colors ---
+        if colors is not None and colors.shape[0] >= n:
+            c = np.clip(colors[:n], 0, 1)
+            rows["r"].extend(c[:, 0].astype(float).tolist())
+            rows["g"].extend(c[:, 1].astype(float).tolist())
+            rows["b"].extend(c[:, 2].astype(float).tolist())
+        else:
+            rows["r"].extend([0.5] * n)
+            rows["g"].extend([0.5] * n)
+            rows["b"].extend([0.5] * n)
 
-            base_conf = float(conf[j]) if conf is not None and j < len(conf) else 0.5
-            rows["confidence"].append(base_conf)
+        # --- Vectorized confidence ---
+        if conf is not None and len(conf) >= n:
+            rows["confidence"].extend(conf[:n].astype(float).tolist())
+        else:
+            rows["confidence"].extend([0.5] * n)
 
-            # Associate point with nearest PF track and compute lifecycle state
-            best_track = "untracked"
-            if frame_tracks:
-                pt = np.array([px, py, pz])
-                min_dist = float("inf")
-                for (tid, track_pos, track_bbox) in frame_tracks:
-                    dist = float(np.linalg.norm(pt - track_pos))
-                    # Within bounding box radius = tracked
-                    radius = float(np.linalg.norm(track_bbox)) / 2.0
-                    if dist < radius and dist < min_dist:
-                        min_dist = dist
-                        best_track = tid
+        # --- Vectorized PF track association (chunked numpy) ---
+        frame_tracks = pf_frame_tracks.get(idx, [])
+        if frame_tracks:
+            # Build track arrays: positions (K,3) and radii (K,)
+            track_ids_list = [t[0] for t in frame_tracks]
+            track_positions = np.array([t[1] for t in frame_tracks])   # (K, 3)
+            track_radii = np.array([
+                float(np.linalg.norm(t[2])) / 2.0 for t in frame_tracks
+            ])  # (K,)
+            K = len(track_ids_list)
 
-            rows["track_id"].append(best_track)
+            # Process in chunks to limit memory (max ~10k points * K tracks)
+            CHUNK = min(10000, max(1, 50_000_000 // (K * 3 * 8)))
+            track_id_arr = []
+            for c_start in range(0, n, CHUNK):
+                c_end = min(c_start + CHUNK, n)
+                chunk_pts = pts[c_start:c_end]  # (C, 3)
+                C = c_end - c_start
 
-            # Lifecycle state
-            if idx >= active_window_start:
-                rows["state"].append("active")
-            elif best_track != "untracked":
-                rows["state"].append("stale")
-            else:
-                rows["state"].append("retired")
+                # (C, K, 3) distance computation
+                diff = chunk_pts[:, np.newaxis, :] - track_positions[np.newaxis, :, :]
+                dists = np.linalg.norm(diff, axis=2)  # (C, K)
+
+                # Mask: within radius
+                within = dists < track_radii[np.newaxis, :]
+                dists_masked = np.where(within, dists, np.inf)
+                best_k = np.argmin(dists_masked, axis=1)  # (C,)
+                best_dist = dists_masked[np.arange(C), best_k]
+
+                for j in range(C):
+                    if best_dist[j] < np.inf:
+                        track_id_arr.append(track_ids_list[best_k[j]])
+                    else:
+                        track_id_arr.append("untracked")
+
+            rows["track_id"].extend(track_id_arr)
+        else:
+            rows["track_id"].extend(["untracked"] * n)
+
+        # --- Vectorized lifecycle state ---
+        if idx >= active_window_start:
+            rows["state"].extend(["active"] * n)
+        elif frame_tracks:
+            # Points associated with tracks are "stale", others "retired"
+            states = []
+            for j in range(n):
+                tid = rows["track_id"][-(n - j)]
+                states.append("stale" if tid != "untracked" else "retired")
+            rows["state"].extend(states)
+        else:
+            rows["state"].extend(["retired"] * n)
 
     table = pa.table(rows)
     parquet_path = recon_dir / f"point_lineage_{run_id}.parquet"

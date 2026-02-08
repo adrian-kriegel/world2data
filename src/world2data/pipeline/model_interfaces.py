@@ -322,11 +322,19 @@ class SAM3Segmenter:
         all_results = []
 
         # Process each text prompt separately and merge
-        for prompt_text in text_prompts:
+        import time as _time
+        for pi, prompt_text in enumerate(text_prompts):
+            t0 = _time.perf_counter()
+            logger.info(f"  SAM3 prompt {pi+1}/{len(text_prompts)}: '{prompt_text}' "
+                        f"({len(frames_to_process)} frames)...")
+            print(f"    SAM3 prompt {pi+1}/{len(text_prompts)}: '{prompt_text}' "
+                  f"({len(frames_to_process)} frames)...", flush=True)
             try:
                 prompt_results = self._segment_single_prompt(
                     frames_to_process, prompt_text, video_fps
                 )
+                elapsed = _time.perf_counter() - t0
+                print(f"    SAM3 prompt '{prompt_text}' done in {elapsed:.1f}s", flush=True)
                 # Merge into all_results
                 for i, pr in enumerate(prompt_results):
                     if i >= len(all_results):
@@ -339,6 +347,7 @@ class SAM3Segmenter:
                         all_results[i].object_ids.extend(pr.object_ids)
             except Exception as e:
                 logger.warning(f"SAM3 failed for prompt '{prompt_text}': {e}")
+                print(f"    SAM3 prompt '{prompt_text}' FAILED: {e}", flush=True)
 
         return all_results
 

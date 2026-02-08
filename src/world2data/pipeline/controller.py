@@ -11,6 +11,7 @@ Converts 2D video into a 3D Dynamic Scene Graph (OpenUSD) using:
 """
 import os
 import sys
+import gc
 import json
 import tempfile
 import shutil
@@ -167,6 +168,24 @@ MAST3R_CHECKPOINT = os.path.join(
     "MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth",
 )
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def _free_gpu_memory(label: str = ""):
+    """Force-free all unused GPU memory so the next model can load.
+
+    PyTorch's CUDA allocator caches freed tensors; this empties that cache
+    and runs Python garbage collection to release any dangling references.
+    """
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        free, total = torch.cuda.mem_get_info()
+        used_mb = (total - free) / 1024 ** 2
+        total_mb = total / 1024 ** 2
+        tag = f" [{label}]" if label else ""
+        print(f"  GPU{tag}: {used_mb:.0f}/{total_mb:.0f} MB used "
+              f"({free / 1024 ** 2:.0f} MB free)")
 
 
 def _normalize_output_usd_path(path: str) -> str:
@@ -411,6 +430,120 @@ class World2DataPipeline:
             shutil.rmtree(self.cache_dir, ignore_errors=True)
 
     # =====================================================================
+    # INTERMEDIATE CHECKPOINTS & PER-FRAME POINT CLOUDS
+    # =====================================================================
+    def _checkpoint_dir(self):
+        """Return the checkpoint directory (sibling to output .usda)."""
+        base_dir = os.path.dirname(os.path.abspath(self.output_path))
+        return os.path.join(base_dir, "checkpoints")
+
+    def _save_checkpoint(self, step_name, data=None):
+        """Save an intermediate checkpoint after a pipeline step.
+
+        This ensures that partial results survive crashes.  Each checkpoint
+        is a JSON file with summary metadata so an investor can see progress
+        even if later steps fail.
+        """
+        ckpt_dir = self._checkpoint_dir()
+        os.makedirs(ckpt_dir, exist_ok=True)
+        import time as _time
+
+        ckpt = {
+            "step": step_name,
+            "timestamp": _time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "video_path": self.video_path,
+            "video_fps": self.video_fps,
+            "num_keyframes": len(self.keyframes),
+            "num_frame_data": len(self.frame_data),
+            "num_points": int(self.point_cloud.shape[0]) if self.point_cloud is not None else 0,
+            "num_poses": len(self.poses),
+            "num_objects_3d": len(self.objects_3d),
+            "num_yolo_detections": len(self.yolo_detections),
+            "num_pf_tracks": len(self.pf_track_estimates),
+            "num_objects_4d": len(self.objects_4d),
+        }
+        if data:
+            ckpt.update(data)
+
+        ckpt_path = os.path.join(ckpt_dir, f"{step_name}.json")
+        with open(ckpt_path, "w") as f:
+            json.dump(ckpt, f, indent=2, default=str)
+        print(f"  CHECKPOINT saved: {ckpt_path}")
+
+    def _save_per_frame_point_clouds(self):
+        """Save per-frame point clouds as individual PLY files immediately.
+
+        Writes to <output_dir>/per_frame_clouds/frame_NNNNNN.ply
+        These are in the ALIGNED coordinate system (post-stitching for
+        sliding-window mode) so they can be viewed frame-by-frame to
+        verify temporal progression along the time axis.
+
+        Also writes a manifest JSON listing all frames with metadata.
+        """
+        if not self.frame_data:
+            print("  SKIP: No frame data for per-frame PLY export.")
+            return
+
+        base_dir = os.path.dirname(os.path.abspath(self.output_path))
+        pf_dir = os.path.join(base_dir, "per_frame_clouds")
+        os.makedirs(pf_dir, exist_ok=True)
+
+        fps = self.video_fps or 30.0
+        manifest = []
+
+        for fd in self.frame_data:
+            n = fd.pts3d.shape[0] if fd.pts3d is not None else 0
+            if n == 0:
+                continue
+
+            fname = f"frame_{fd.index:06d}.ply"
+            ply_path = os.path.join(pf_dir, fname)
+
+            pts = fd.pts3d
+            cols = fd.colors
+
+            has_color = cols is not None and cols.shape[0] == n
+            with open(ply_path, "w") as f:
+                f.write("ply\nformat ascii 1.0\n")
+                f.write(f"element vertex {n}\n")
+                f.write("property float x\nproperty float y\nproperty float z\n")
+                if has_color:
+                    f.write("property uchar red\nproperty uchar green\nproperty uchar blue\n")
+                f.write("end_header\n")
+                for i in range(n):
+                    x, y, z = pts[i]
+                    line = f"{x:.6f} {y:.6f} {z:.6f}"
+                    if has_color:
+                        r, g, b = np.clip(cols[i] * 255, 0, 255).astype(int)
+                        line += f" {r} {g} {b}"
+                    f.write(line + "\n")
+
+            manifest.append({
+                "frame_index": int(fd.index),
+                "timestamp_sec": round(fd.index / fps, 4),
+                "point_count": n,
+                "file": fname,
+                "coordinate_system": "aligned_world",
+            })
+
+        # Write manifest
+        manifest_path = os.path.join(pf_dir, "manifest.json")
+        with open(manifest_path, "w") as f:
+            json.dump({
+                "description": "Per-frame point clouds in aligned world coordinates",
+                "video_fps": fps,
+                "total_frames": len(manifest),
+                "total_points": sum(m["point_count"] for m in manifest),
+                "frames": manifest,
+            }, f, indent=2)
+
+        total_pts = sum(m["point_count"] for m in manifest)
+        print(f"  PER-FRAME CLOUDS: {len(manifest)} PLY files -> {pf_dir}")
+        print(f"    Total points: {total_pts:,} | "
+              f"Frames: {manifest[0]['frame_index']}-{manifest[-1]['frame_index']} | "
+              f"Time: {manifest[0]['timestamp_sec']:.1f}s-{manifest[-1]['timestamp_sec']:.1f}s")
+
+    # =====================================================================
     # RALPH LOOP
     # =====================================================================
     def run_ralph_loop(self, threshold=15.0, strategy="swin-3",
@@ -455,6 +588,11 @@ class World2DataPipeline:
                         print("!!! Step 1 still failing. Check your video input.")
                         return False
 
+            self._save_checkpoint("step_1_keyframes", {
+                "keyframe_timestamps": self.keyframe_timestamps,
+                "keyframe_dir": self.keyframe_dir,
+            })
+
             # STEP 2: METRIC GEOMETRY (MASt3R)
             use_sliding_window = (demo_fps and demo_fps > 0
                                   and len(self.keyframes) > 30)
@@ -473,35 +611,80 @@ class World2DataPipeline:
                     print("!!! Step 2 still failing. Video may lack parallax.")
                     return False
 
+            # --- Save per-frame point clouds IMMEDIATELY after MASt3R ---
+            # This gives you browsable PLY files per frame right away,
+            # even if later steps fail.  All in aligned world coordinates.
+            self._save_per_frame_point_clouds()
+
+            self._save_checkpoint("step_2_mast3r", {
+                "per_frame_counts": [fd.pts3d.shape[0] for fd in self.frame_data],
+                "focals": self.focals,
+            })
+
+            # Free MASt3R VRAM before loading any more GPU models
+            _free_gpu_memory("post-MASt3R")
+
             can_use_multimodel = use_multimodel and has_v2_stack
             if can_use_multimodel:
                 # ========== NEW v2 MULTI-MODEL PIPELINE ==========
                 # STEP 3a: YOLOv8 Detection (fast, all keyframes)
                 self.step_3a_yolo_detection()
 
+                self._save_checkpoint("step_3a_yolo", {
+                    "yolo_classes": sorted(set(
+                        n for d in self.yolo_detections for n in d.class_names
+                    )) if self.yolo_detections else [],
+                })
+
+                # Free YOLO model before PF (PF is CPU-only, but clears space)
+                _free_gpu_memory("post-YOLO")
+
                 # STEP 3d: Particle Filter 3D Tracking (YOLO + MASt3R -> 3D tracks)
                 # Runs BEFORE Gemini/reasoning so downstream has 3D reference data
                 self.step_3d_particle_filter_tracking()
 
+                self._save_checkpoint("step_3d_particle_filter", {
+                    "track_ids": list(self.pf_track_estimates.keys()),
+                })
+
                 # STEP 3b: SAM3 Video Segmentation (pixel-perfect + tracking)
                 self.step_3b_sam3_segmentation()
+
+                self._save_checkpoint("step_3b_sam3")
+
+                # Free SAM3 model before Gemini (Gemini uses API, not local GPU)
+                _free_gpu_memory("post-SAM3")
 
                 # STEP 3c: Gemini Video Analysis (full video upload)
                 self.step_3c_gemini_video_analysis()
 
+                self._save_checkpoint("step_3c_gemini", {
+                    "has_scene_description": self.scene_description is not None,
+                })
+
                 # STEP 4: 4D Scene Fusion + Reasoning
                 self.step_4_scene_fusion_and_reasoning()
+
+                self._save_checkpoint("step_4_fusion", {
+                    "objects_4d_count": len(self.objects_4d),
+                    "evaluation": self.evaluation if self.evaluation else {},
+                })
             else:
                 # ========== LEGACY v1 (fallback) ==========
                 self.step_3_semantic_detection()
+                self._save_checkpoint("step_3_legacy_detection")
                 self.step_4_causal_reasoning()
+                self._save_checkpoint("step_4_legacy_reasoning")
 
             # STEP 5: OPENUSD EXPORT (with physics + confidence + human flags)
             self.step_5_export_usd()
 
+            self._save_checkpoint("step_5_usd_export")
+
             # STEP 5b: LAYERED OPENUSD (protocol-compliant scene bundle)
             try:
                 self.step_5b_export_layered_usd()
+                self._save_checkpoint("step_5b_layered_usd")
             except Exception as e:
                 print(f"  WARN: Layered USD export failed (non-fatal): {e}")
 
@@ -509,12 +692,19 @@ class World2DataPipeline:
             if self.rerun_enabled:
                 rrd_path = self._derive_output_path(".rrd")
                 self.save_temporal_rrd(rrd_path)
+                self._save_checkpoint("step_6_rerun", {"rrd_path": rrd_path})
             else:
                 print("SKIP: Rerun recording disabled (--no-rerun).")
 
             # STEP 7: PLY EXPORT (for easy 3D viewer access)
             ply_path = self._derive_output_path(".ply")
             self.export_ply(ply_path)
+
+            self._save_checkpoint("step_7_ply_export_COMPLETE", {
+                "ply_path": ply_path,
+                "output_usda": self.output_path,
+                "layered_scene": self._layered_scene_path,
+            })
 
             print(">>> PIPELINE COMPLETE. ARTIFACT GENERATED.")
             return True
@@ -779,6 +969,10 @@ class World2DataPipeline:
         else:
             self.point_cloud = np.empty((0, 3))
             self.point_colors = np.empty((0, 3))
+
+        # Free MASt3R model + scene from GPU
+        del model, scene
+        _free_gpu_memory("MASt3R-cleanup")
 
         n_pts = self.point_cloud.shape[0]
         per_frame = [fd.pts3d.shape[0] for fd in self.frame_data]
@@ -1070,6 +1264,10 @@ class World2DataPipeline:
             print(f"FAIL: Only {n_pts} points (need {min_points}).")
             return False
 
+        # Explicitly free MASt3R model from GPU before next steps
+        del model
+        _free_gpu_memory("MASt3R-cleanup")
+
         print(f"PASS: {n_pts:,} points across {len(self.frame_data)} frames "
               f"({effective_fps:.1f} FPS, "
               f"per-frame: {min(per_frame)}-{max(per_frame)}, "
@@ -1130,6 +1328,9 @@ class World2DataPipeline:
         total_dets = sum(len(d.class_names) for d in self.yolo_detections)
         print(f"  PASS: {total_dets} detections across {len(self.yolo_detections)} frames")
         print(f"  Classes: {', '.join(f'{k}({v})' for k, v in list(freq.items())[:10])}")
+
+        # Free YOLO model GPU memory
+        del detector
 
     # =====================================================================
     # STEP 3d: MULTI-OBJECT PARTICLE FILTER (3D tracking from YOLO + MASt3R)
@@ -1283,19 +1484,15 @@ class World2DataPipeline:
             print("  SKIP: No keyframes.")
             return
 
-        # Get text prompts from YOLO detections
+        # Get text prompts from YOLO detections -- top 3 by frequency
         if self.yolo_detections:
-            detector_tmp = YOLODetector.__new__(YOLODetector) if _HAS_YOLO else None
-            if detector_tmp and hasattr(detector_tmp, 'get_unique_classes'):
-                text_prompts = sorted(set(
-                    name for det in self.yolo_detections
-                    for name in det.class_names
-                ))[:8]  # limit to top 8 classes
-            else:
-                text_prompts = sorted(set(
-                    name for det in self.yolo_detections
-                    for name in det.class_names
-                ))[:8]
+            from collections import Counter
+            class_counter = Counter(
+                name for det in self.yolo_detections
+                for name in det.class_names
+            )
+            # Top 3 most frequent classes for speed
+            text_prompts = [cls for cls, _ in class_counter.most_common(3)]
         else:
             text_prompts = ["object"]  # generic fallback
 
@@ -1303,12 +1500,20 @@ class World2DataPipeline:
             print("  SKIP: No text prompts from YOLO detections.")
             return
 
-        print(f"  Text prompts from YOLO: {text_prompts}")
+        # Subsample frames for SAM3 speed: max ~22 frames
+        sam3_max_frames = min(len(self.keyframes), 22)
+        sam3_stride = max(1, len(self.keyframes) // sam3_max_frames)
+        sam3_indices = list(range(0, len(self.keyframes), sam3_stride))[:sam3_max_frames]
+
+        print(f"  Text prompts from YOLO (top 3): {text_prompts}")
+        print(f"  SAM3 processing {len(sam3_indices)}/{len(self.keyframes)} frames "
+              f"(stride={sam3_stride})")
 
         try:
             segmenter = SAM3Segmenter(device=DEVICE)
-            # Convert keyframes to RGB
-            frames_rgb = [cv2.cvtColor(kf, cv2.COLOR_BGR2RGB) for kf in self.keyframes]
+            # Convert subsampled keyframes to RGB
+            frames_rgb = [cv2.cvtColor(self.keyframes[i], cv2.COLOR_BGR2RGB)
+                          for i in sam3_indices]
             self.sam3_segmentations = segmenter.segment_video_with_text(
                 frames_rgb, text_prompts, video_fps=self.video_fps,
                 max_frames=len(frames_rgb),
@@ -1330,6 +1535,9 @@ class World2DataPipeline:
                                 n_matched += 1
                                 break
                 print(f"  Cross-ref: {n_matched} SAM3 objects matched to PF tracks")
+
+            # Explicitly free SAM3 model from GPU
+            del segmenter
         except Exception as e:
             print(f"  WARN: SAM3 segmentation failed: {e}")
             self.sam3_segmentations = []

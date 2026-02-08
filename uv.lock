@@ -1052,6 +1052,20 @@ wheels = [
 ]
 
 [[package]]
+name = "kernels"
+version = "0.12.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "huggingface-hub" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5d/c5/d9bd5f3332b288bf3e771a42b7c3c9d2af8daa58c682a84c4e0c83058d62/kernels-0.12.1.tar.gz", hash = "sha256:41e31ef167add0062cdc302a943ce287194c13b5af12b82a5fa76e7353ca0042", size = 56712, upload-time = "2026-01-26T16:15:48.319Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/ab/6d1453b2a1b0a473e107745ef4d4f79241f6ef0ed8a371d62e93b4100bee/kernels-0.12.1-py3-none-any.whl", hash = "sha256:4569fe00bc6a2b0f2cccff81841d7917af143c786ade152c3b2a78f61097c757", size = 55110, upload-time = "2026-01-26T16:15:46.951Z" },
+]
+
+[[package]]
 name = "kiwisolver"
 version = "1.4.9"
 source = { registry = "https://pypi.org/simple" }
@@ -3214,6 +3228,7 @@ dependencies = [
     { name = "google-genai" },
     { name = "gradio" },
     { name = "huggingface-hub", extra = ["torch"] },
+    { name = "kernels" },
     { name = "matplotlib" },
     { name = "open3d" },
     { name = "opencv-contrib-python" },
@@ -3272,6 +3287,7 @@ requires-dist = [
     { name = "google-genai", specifier = ">=1.62.0" },
     { name = "gradio", specifier = ">=6.5.1" },
     { name = "huggingface-hub", extras = ["torch"], specifier = ">=0.22" },
+    { name = "kernels" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "open3d", specifier = ">=0.19.0" },
     { name = "opencv-contrib-python", specifier = ">=4.13.0.92" },

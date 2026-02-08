@@ -32,6 +32,7 @@ dependencies = [
     "trimesh>=4.11.1",
     "ultralytics>=8.4.12",
     "usd-core>=25.11",
+    "kernels",
 ]
 [[tool.uv.index]]
 name = "pytorch-cu121"

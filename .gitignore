@@ -22,7 +22,6 @@ mast3r/
 # Data directory (large / generated artifacts, keep structure only)
 # ---------------------------------------------------------------
 # Videos (large, not committed)
-data/inputs/*.mp4
 data/inputs/*.avi
 data/inputs/*.mov
 # Model weights (large, downloaded on first run)
@@ -39,6 +38,8 @@ data/models/*.onnx
 # All generated outputs (USD scene bundles, PLY, parquet, RRD)
 data/outputs/*
 # But keep the directory structure markers
+!data/inputs/*.mp4
+!data/outputs/*.mp4
 !data/inputs/.gitkeep
 !data/outputs/.gitkeep
 !data/models/.gitkeep
@@ -61,6 +62,9 @@ Thumbs.db
 *.tmp
 w2d_keyframes_*/
 w2d_cache_*/
+
+# Local OpenUSD binary toolchain (large)
+tools/openusd/
 
 # Testenvironment generated artifacts
 testenvironment/**/outputs/

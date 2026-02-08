@@ -1,46 +1,46 @@
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "world2data"
-version = "0.1.0"
-description = "Generate structured world data from videos."
-readme = "README.md"
-requires-python = ">=3.10"
+version = "0.2.0"
+description = "World-to-USD pipeline: converts 2D video into 4D Dynamic Scene Graphs (OpenUSD) with multi-model AI"
+requires-python = ">=3.11"
 dependencies = [
-  "numpy>=1.26",
+    "accelerate>=1.12.0",
+    "einops>=0.8.2",
+    "google-genai>=1.62.0",
+    "gradio>=6.5.1",
+    "huggingface-hub[torch]>=0.22",
+    "matplotlib>=3.10.8",
+    "open3d>=0.19.0",
+    "opencv-python>=4.13.0.92",
+    "pyglet<2",
+    "python-dotenv>=1.2.1",
+    "rerun-sdk>=0.29.1",
+    "roma>=1.5.5",
+    "scipy>=1.17.0",
+    "tensorboard>=2.20.0",
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "transformers>=5.1.0",
+    "trimesh>=4.11.1",
+    "ultralytics>=8.4.12",
+    "usd-core>=25.11",
 ]
 
-[project.optional-dependencies]
-test = [
-  "pytest>=8.0",
-]
-vision = [
-  "accelerate>=0.30",
-  "pillow>=10.0",
-  "torch>=2.2",
-  "transformers>=4.45",
-  "ultralytics>=8.3",
-]
-openusd = [
-  "usd-core>=25.11",
-]
-all = [
-  "pytest>=8.0",
-  "accelerate>=0.30",
-  "pillow>=10.0",
-  "torch>=2.2",
-  "transformers>=4.45",
-  "ultralytics>=8.3",
-  "usd-core>=25.11",
-]
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
 
-[project.scripts]
-world2data = "world2data.__main__:main"
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+torchvision = { index = "pytorch-cu121" }
 
-[tool.setuptools.packages.find]
-include = ["world2data*"]
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+markers = [
+    "overnight: long-running GPU tests (run with --overnight)",
+]

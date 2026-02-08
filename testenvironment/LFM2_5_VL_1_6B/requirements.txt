@@ -1,4 +1,8 @@
 git+https://github.com/huggingface/transformers.git@2a5ba8b53d298ed8421e09831bf96bb6d056a24d
 pillow
 torch
+torchvision
 accelerate
+opencv-python
+
+

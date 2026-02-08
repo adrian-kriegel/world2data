@@ -1,49 +1,58 @@
 # LFM2.5-VL-1.6B Test Environment
 
-This folder contains a simple setup to test the `LiquidAI/LFM2.5-VL-1.6B` model.
+This folder contains a simple setup to test the `LiquidAI/LFM2.5-VL-1.6B` model with full GPU support.
 
 ## Prerequisites
 
 - [Python](https://www.python.org/downloads/) (3.10+ recommended)
-- [Git](https://git-scm.com/downloads) (Required for installing the specific transformers version)
+- [Git](https://git-scm.com/downloads)
+- **NVIDIA GPU**: Required for reasonable performance.
 
 ## Setup
 
 1.  **Open a terminal in this folder.**
     `c:\Users\Johannes\Documents\KickelToTheCock\world2data\testenvironment\LFM2_5_VL_1_6B`
 
-2.  **Create a virtual environment:**
+2.  **Create a virtual environment (if not already done):**
     ```bash
-    python -m venv venv
+    python -m venv .venv
     ```
 
 3.  **Activate the virtual environment:**
-    -   **Windows:**
-        ```bash
-        .\venv\Scripts\activate
+    -   **Windows (PowerShell):**
+        ```powershell
+        .\.venv\Scripts\activate
         ```
-    -   **Linux/Mac:**
+    -   **Git Bash / Mac / Linux:**
         ```bash
-        source venv/bin/activate
+        source .venv/Scripts/activate
         ```
 
 4.  **Install dependencies:**
+    **CRITICAL:** We must install PyTorch with CUDA 12.1 (or compatible) support explicitly first, then the rest.
+    
     ```bash
+    # 1. Install PyTorch with CUDA support (Use cu124 for Python 3.13+)
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+
+    # 2. Install the rest of the requirements
     pip install -r requirements.txt
     ```
-    *Note: This installs a specific version of transformers directly from GitHub as required by the model documentation.*
 
 ## How to Run
 
-1.  **Configure Input:**
-    -   Open `inputs/config.json`.
-    -   You can change the `prompt`.
-    -   To use an online image, set `image_url`.
-    -   To use a local image, set `local_image_path` (e.g., `"inputs/my_image.jpg"`) and `image_url` to `null`.
+1.  **Video Analysis (GPU Optimized):**
+    -   Place your `.mp4` video in `inputs/videos/`.
+    -   Run the script:
+        ```bash
+        python run_video.py
+        ```
+    -   The script will verify your GPU is active and process the video in chunks.
+    -   Output is saved to `outputs/your_video_name.txt`.
 
-2.  **Run the script:**
-    ```bash
-    python run_model.py
-    ```
-
-The model will download (the first time), process the image defined in the config, and print the description.
+2.  **Single Image Test:**
+    -   Edit `inputs/config.json`.
+    -   Run:
+        ```bash
+        python run_model.py
+        ```

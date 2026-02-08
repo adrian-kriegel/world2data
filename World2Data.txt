@@ -1,0 +1,270 @@
+# Project: World2Data - Deep Tech Ground Truth Pipeline
+
+## Context
+We are building a "World-to-USD" pipeline that converts 2D video into a 3D Dynamic Scene Graph (OpenUSD).
+**Goal:** Deep Tech VC Track Win.
+**Core Stack:**
+1.  **Geometry:** MASt3R (SOTA Multi-view reconstruction)
+2.  **Semantics:** SAM 3 (Segment Anything with Concepts)
+3.  **Reasoning:** Gemini 3 Pro (Spatial/Causal reasoning)
+4.  **Output:** OpenUSD (.usda) & Rerun.io (Visualization)
+
+## Phase 1: Environment Setup & Dependencies
+
+**Action for Cursor:** Execute these shell commands to set up the environment.
+
+```bash
+# 1. Create Conda Environment
+conda create -n world2data python=3.11 -y
+conda activate world2data
+
+# 2. Install Pytorch (CUDA 12.1)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# 3. Install Core Libraries
+pip install numpy opencv-python rerun-sdk matplotlib open3d scipy
+
+# 4. Install Google GenAI (Gemini 3)
+pip install google-genai
+
+# 5. Install OpenUSD (Pixar)
+pip install usd-core
+
+# 6. Install MASt3R (Clone & Install)
+git clone --recursive https://github.com/naver/mast3r
+cd mast3r
+pip install -r requirements.txt
+# Download Checkpoint
+mkdir -p checkpoints/
+wget https://download.europe.naverlabs.com/ComputerVision/MASt3R/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth -P checkpoints/
+cd ..
+
+# 7. Install SAM 3 (Hypothetical Install - Adapt to actual repo if private)
+# Assuming a standard install for the newest Meta model
+pip install git+https://github.com/facebookresearch/segment-anything-3.git
+```
+
+## Phase 2: The "Ralph Loop" Pipeline Architecture
+
+**Action for Cursor:** Create the file `pipeline_controller.py`. This is the brain of the operation. It runs the pipeline step-by-step and **verifies** the output at each stage before moving forward.
+
+```python
+import os
+import cv2
+import torch
+import numpy as np
+import rerun as rr
+from pxr import Usd, UsdGeom, Sdf, Gf
+
+# --- Placeholder Imports for SOTA Models ---
+# In a real run, these import from the installed repos
+try:
+    from mast3r.model import AsymmetricMASt3R
+    from mast3r.inference import global_aligner
+except ImportError:
+    print("WARNING: MASt3R not found. Mocking for architectural demo.")
+
+try:
+    from google import genai
+except ImportError:
+    print("WARNING: Gemini SDK not found.")
+
+class World2DataPipeline:
+    def __init__(self, video_path, output_path="output.usda"):
+        self.video_path = video_path
+        self.output_path = output_path
+        self.keyframes = []
+        self.poses = []  # 4x4 Matrices
+        self.point_cloud = None
+        self.scene_graph = {} # JSON-LD style intermediate graph
+        
+        # Initialize Rerun for debugging
+        rr.init("world2data_debug", spawn=True)
+
+    def run_ralph_loop(self):
+        """The Self-Correcting Execution Loop"""
+        print(">>> STARTING RALPH LOOP...")
+
+        # STEP 1: KEYFRAME EXTRACTION
+        if not self.step_1_smart_extraction():
+            print("!!! Step 1 Failed. Retrying with lower threshold...")
+            self.step_1_smart_extraction(threshold=0.3)
+
+        # STEP 2: METRIC GEOMETRY (MASt3R)
+        if not self.step_2_geometric_reconstruction():
+            print("!!! Step 2 Failed (Low Confidence). Retrying with exhaustive matching...")
+            self.step_2_geometric_reconstruction(strategy='exhaustive')
+
+        # STEP 3: SEMANTIC LIFTING (SAM 3)
+        self.step_3_semantic_segmentation()
+
+        # STEP 4: CAUSAL REASONING (Gemini 3 Pro)
+        self.step_4_causal_reasoning()
+
+        # STEP 5: USD EXPORT
+        self.step_5_export_usd()
+        print(">>> PIPELINE COMPLETE. ARTIFACT GENERATED.")
+
+    # =========================================================================
+    # STEP 1: SMART EXTRACTION (Information Theory)
+    # =========================================================================
+    def step_1_smart_extraction(self, threshold=15.0):
+        print(f"--- Step 1: Extracting Keyframes (Threshold: {threshold}) ---")
+        cap = cv2.VideoCapture(self.video_path)
+        last_frame = None
+        self.keyframes = []
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret: break
+            
+            if last_frame is None:
+                self.keyframes.append(frame)
+                last_frame = frame
+                continue
+            
+            # Simple L1 pixel diff (Replace with LPIPS for production)
+            diff = np.mean(np.abs(frame.astype(float) - last_frame.astype(float)))
+            if diff > threshold:
+                self.keyframes.append(frame)
+                last_frame = frame
+        
+        # VERIFICATION
+        if len(self.keyframes) < 5:
+            print(f"FAIL: Only {len(self.keyframes)} frames extracted.")
+            return False
+        
+        print(f"PASS: Extracted {len(self.keyframes)} keyframes.")
+        return True
+
+    # =========================================================================
+    # STEP 2: GEOMETRY (MASt3R)
+    # =========================================================================
+    def step_2_geometric_reconstruction(self, strategy='sequential'):
+        print(f"--- Step 2: MASt3R Reconstruction (Strategy: {strategy}) ---")
+        
+        # MOCK IMPLEMENTATION FOR ARCHITECTURE DEMO
+        # Real code would run: scene = global_aligner(model, imgs, pair_selection=strategy)
+        
+        # Simulating a Pass/Fail check
+        simulated_confidence = 0.85 
+        if simulated_confidence < 0.7:
+            return False
+            
+        # Logging to Rerun (The Impact Artifact)
+        # rr.log("world/points", rr.Points3D(self.point_cloud, colors=...))
+        # rr.log("world/cameras", rr.Transform3D(...))
+        
+        print("PASS: Geometry Reconstructed.")
+        return True
+
+    # =========================================================================
+    # STEP 3: SEMANTICS (SAM 3)
+    # =========================================================================
+    def step_3_semantic_segmentation(self):
+        print("--- Step 3: SAM 3 Concept Lifting ---")
+        # Prompt: "Find all interactable objects (doors, handles, drawers)"
+        # SAM 3 returns masks. We project these masks onto the 3D point cloud.
+        
+        # Conceptual Logic:
+        # for frame, mask in sam3_results:
+        #    3d_points = project_depth(mask, depth_map)
+        #    self.scene_graph.add_node("Object_X", type="Door", points=3d_points)
+        pass
+
+    # =========================================================================
+    # STEP 4: REASONING (Gemini 3 Pro)
+    # =========================================================================
+    def step_4_causal_reasoning(self):
+        print("--- Step 4: Gemini 3 Pro Physics Analysis ---")
+        
+        # PROMPT ENGINEERING
+        prompt = """
+        You are a physics engine debugger.
+        Input: A video of a human and a Door.
+        Reasoning Trace:
+        1. State at T=0 (Open/Closed?)
+        2. Action (Push/Pull?)
+        3. State at T=End (Did it change?)
+        Output JSON:
+        {
+            "entity": "Door_01",
+            "component_type": "RevoluteJoint",
+            "state_change": ["closed", "open"]
+        }
+        """
+        # response = client.models.generate_content(model="gemini-3-pro", contents=[video, prompt])
+        # self.scene_graph.update(response.json())
+        pass
+
+    # =========================================================================
+    # STEP 5: OPENUSD EXPORT (The Deliverable)
+    # =========================================================================
+    def step_5_export_usd(self):
+        print(f"--- Step 5: Writing OpenUSD to {self.output_path} ---")
+        
+        stage = Usd.Stage.CreateNew(self.output_path)
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        
+        # Create Root
+        root = UsdGeom.Xform.Define(stage, "/World")
+        
+        # Example: Create the Door found by SAM 3 + Gemini
+        door = UsdGeom.Cube.Define(stage, "/World/Door_01")
+        
+        # Add Physics Properties (The "Deep Tech" part)
+        # In a real impl, we add UsdPhysicsRigidBodyAPI here
+        
+        stage.GetRootLayer().Save()
+        print(f"PASS: Saved {self.output_path}")
+
+if __name__ == "__main__":
+    pipeline = World2DataPipeline("input_video.mp4")
+    pipeline.run_ralph_loop()
+```
+
+## Phase 3: The Pitch Visualization (Rerun.io)
+
+**Action for Cursor:** Create `visualize_impact.py`. This script loads the output data and creates the "Matrix View" for the pitch video.
+
+```python
+import rerun as rr
+import numpy as np
+
+def visualize_pitch():
+    rr.init("World2Data_Pitch", spawn=True)
+    
+    # 1. Visualize the Raw Video
+    # rr.log("input/video", rr.Image(...))
+    
+    # 2. Visualize the "Cybernetic Grid" (The Point Cloud)
+    # rr.log("world/geo", rr.Points3D(positions, colors=colors))
+    
+    # 3. Visualize the "Ground Truth" (Bounding Boxes that change color)
+    # Green = Navigable, Red = Obstacle, Blue = Interactable
+    
+    # Simulation of a "State Change" event for the video
+    for t in range(100):
+        rr.set_time_sequence("frame", t)
+        
+        # If t > 50, Door turns Green (Open)
+        color = [255, 0, 0] if t < 50 else [0, 255, 0]
+        label = "Door: Closed" if t < 50 else "Door: Open"
+        
+        rr.log(
+            "world/objects/door", 
+            rr.Boxes3D(mins=[-1,-1,-1], sizes=[2,4,0.5], labels=[label], colors=[color])
+        )
+
+if __name__ == "__main__":
+    visualize_pitch()
+```
+
+## Phase 4: Execution Checklist (The "Ralph" Checks)
+
+1.  **Metric Check:** Does MASt3R return a point cloud with >10k points?
+    * *If No:* Video lacks parallax. Move camera more.
+2.  **Semantic Check:** Does SAM 3 find the "Door"?
+    * *If No:* Prompt Gemini to generate a synonym list ("Entryway", "Portal") and re-prompt SAM.
+3.  **Format Check:** Does the `.usda` file open in `usdview` (or NVIDIA Omniverse)?
+    * *If No:* Your USD hierarchy is broken. Check `pxr` documentation.

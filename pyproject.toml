@@ -57,10 +57,14 @@ vision = [
 openusd = [
   "usd-core>=25.11",
 ]
+pointcloud = [
+  "pclpy>=0.12",
+]
 all = [
   "pytest>=8.0",
   "accelerate>=0.30",
   "opencv-contrib-python>=4.9",
+  "pclpy>=0.12",
   "pillow>=10.0",
   "torch>=2.2",
   "transformers>=4.45",
@@ -74,6 +78,9 @@ world2data-calibration = "world2data.calibration:main"
 world2data-demo = "world2data.pipeline.demo_run:main"
 world2data-generate-demo = "world2data.pipeline.generate_demo:main"
 world2data-review = "world2data.pipeline.human_review_ui:main"
+world2data-yolo-adapter = "world2data.yolo_adapter:main"
+world2data-particle-filter-adapter = "world2data.particle_filter_adapter:main"
+world2data-mesh-adapter = "world2data.mesh_adapter:main"
 
 [dependency-groups]
 dev = [

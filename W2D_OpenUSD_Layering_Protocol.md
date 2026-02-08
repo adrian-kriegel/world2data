@@ -54,6 +54,7 @@ We standardize layers into roles:
 - **Inputs**: references to raw inputs (video, point cloud URIs)
 - **Reconstruction**: cameras, calibration, optional mesh/points caches
 - **Tracking**: entities + tracks + associations
+- **Surface Reconstruction**: Open3D meshes from stitched track point clouds
 - **Events/Graph**: inferred relations/events
 - **Overrides/QA**: human corrections / approvals
 - **Session**: local user tweaks (not checked in)
@@ -73,6 +74,7 @@ scene/
     10_inputs_run_<RUNID>.usda    # input refs + metadata
     20_recon_run_<RUNID>.usdc     # cameras + recon outputs
     30_tracks_run_<RUNID>.usdc    # entities + tracks
+    35_mesh_run_<RUNID>.usdc      # Open3D colored meshes from PF stitched clouds
     40_events_run_<RUNID>.usda    # events/relations graph
     90_overrides.usda             # human QA / final decisions (strong)
     99_session.usda               # per-user local edits (strongest; ignored by VCS)
@@ -80,6 +82,8 @@ scene/
     inputs/office.mp4
     recon/cloud_01.ply
     recon/cloud_01_cache.usdc     # optional USD cache payload
+    recon/stitched/cup_01_points_colored.ply
+    recon/meshes/cup_01_mesh_colored.ply
 ```
 
 **Rule:** Everything under `layers/` is composable. Everything under `external/` is data referenced by `asset` paths.
@@ -103,9 +107,10 @@ Sublayers listed earlier are weaker. Later layers override earlier ones.
 2. `10_inputs_run_<RUNID>.usda`
 3. `20_recon_run_<RUNID>.usdc`
 4. `30_tracks_run_<RUNID>.usdc`
-5. `40_events_run_<RUNID>.usda`
-6. `90_overrides.usda`
-7. `99_session.usda` (optional, local only)
+5. `35_mesh_run_<RUNID>.usdc`
+6. `40_events_run_<RUNID>.usda`
+7. `90_overrides.usda`
+8. `99_session.usda` (optional, local only)
 
 ### 4.3 Minimal assembly example
 ```usda
@@ -122,6 +127,7 @@ Sublayers listed earlier are weaker. Later layers override earlier ones.
     @./layers/10_inputs_run_01JX...usda@,
     @./layers/20_recon_run_01JX...usdc@,
     @./layers/30_tracks_run_01JX...usdc@,
+    @./layers/35_mesh_run_01JX...usdc@,
     @./layers/40_events_run_01JX...usda@,
     @./layers/90_overrides.usda@,
     @./layers/99_session.usda@
@@ -142,6 +148,8 @@ All pipeline artifacts live under:
 | `/World/W2D/Inputs/**` | Ingest | Video refs, point cloud refs, calibration blobs |
 | `/World/W2D/Sensors/**` | Recon | Cameras, rigs, intrinsics/extrinsics |
 | `/World/W2D/Reconstruction/**` | Recon | Point cloud caches, meshes, depth assets |
+| `/World/W2D/Reconstruction/StitchedTrackPointClouds/**` | Tracking (PF) | Track-aligned stitched point-cloud asset indexes |
+| `/World/W2D/Reconstruction/Meshes/**` | Surface Reconstruction | Open3D mesh asset indexes + mesh metadata |
 | `/World/W2D/Entities/**` | Tracking | Entity instances (people/objects) |
 | `/World/W2D/Tracks/**` | Tracking | Track prims + time‑varying poses |
 | `/World/W2D/Observations/**` | Perception | Per‑frame detections/segmentations (often as external refs) |
@@ -278,6 +286,7 @@ A minimal CI step should verify:
 5. Cameras have `xformOpOrder` when using xformOps
 6. Provenance run record exists for each producer layer
 7. No dense point-cloud arrays are authored inside protocol layers (asset refs only)
+8. Mesh layer outputs declare color support (`w2d:meshHasVertexColors=true` and `w2d:sourcePointsHaveColor=true`)
 
 ---
 
@@ -318,7 +327,16 @@ A minimal CI step should verify:
 
 ### 12.7 Particle Filter Tracking (`30_tracks_run_<RUNID>.usda/.usdc`)
 - consumes calibration + camera poses + YOLO + stamped point-cloud asset references
-- writes only centroid trajectory + mean bounding box dimensions per track
+- writes centroid trajectory + mean bounding box dimensions per track
+- writes track-aligned stitched point-cloud index prims under `/World/W2D/Reconstruction/StitchedTrackPointClouds/**`
+- stitched track point-cloud assets must be external and colorized (RGB per point)
+- provenance
+
+### 12.8 Surface Reconstruction / Open3D (`35_mesh_run_<RUNID>.usda/.usdc`)
+- consumes stitched colored point clouds from PF (`/World/W2D/Reconstruction/StitchedTrackPointClouds/**`)
+- runs Open3D surface reconstruction per track with high-fidelity settings
+- writes mesh index prims under `/World/W2D/Reconstruction/Meshes/**`
+- mesh assets must be external and colorized (vertex colors or texture-backed color)
 - provenance
 
 ### 12.8 Gemini Video Analysis (input to `40_events_run_<RUNID>.usda`)
@@ -474,10 +492,12 @@ reasoning. Without it, Gemini and the reasoning engine lack spatial anchoring.
 - Scope roots:
   - `/World/W2D/Entities/Objects`
   - `/World/W2D/Tracks/ParticleFilter`
+  - `/World/W2D/Reconstruction/StitchedTrackPointClouds`
 - Per-entity prim: `/World/W2D/Entities/Objects/<TRACK_ID_SAFE>`
   - `string w2d:uid` (stable track id)
   - `string w2d:class`
   - `rel w2d:track -> /World/W2D/Tracks/ParticleFilter/<TRACK_ID_SAFE>`
+  - `rel w2d:stitchedPointCloud -> /World/W2D/Reconstruction/StitchedTrackPointClouds/<TRACK_ID_SAFE>`
   - `string w2d:producedByRunId`
 - Per-track prim: `/World/W2D/Tracks/ParticleFilter/<TRACK_ID_SAFE>` (`Xform`)
   - `xformOp:translate` (time-sampled centroid in world coordinates)
@@ -487,6 +507,15 @@ reasoning. Without it, Gemini and the reasoning engine lack spatial anchoring.
   - `string w2d:class`
   - `string w2d:classHistoryJson` (label-count map)
   - `string w2d:producedByRunId`
+- Per-stitched-cloud prim: `/World/W2D/Reconstruction/StitchedTrackPointClouds/<TRACK_ID_SAFE>` (`Scope`)
+  - `asset w2d:pointsAsset` (external stitched point cloud for this track)
+  - `string w2d:pointsFormat` (recommended `ply`)
+  - `bool w2d:hasColor = true`
+  - `string w2d:colorEncoding` (recommended `rgb_u8` or `rgb_f32`)
+  - `int w2d:pointCount`
+  - `string w2d:trackId`
+  - `string w2d:class`
+  - `string w2d:producedByRunId`
 - Tracking scope summary:
   - `/World/W2D/Tracks/ParticleFilter`
   - `int w2d:trackCount`
@@ -495,6 +524,57 @@ reasoning. Without it, Gemini and the reasoning engine lack spatial anchoring.
   - `string w2d:producedByRunId`
 - Provenance:
   - `/World/W2D/Provenance/runs/<RUNID>` with required run metadata fields.
+
+### 15.7 Open3D Surface Reconstruction Schema (Output)
+- Layer role: surface reconstruction
+- Scope root: `/World/W2D/Reconstruction/Meshes`
+- Per-mesh prim: `/World/W2D/Reconstruction/Meshes/<TRACK_ID_SAFE>` (`Scope`)
+- Required attributes:
+  - `string w2d:trackId`
+  - `string w2d:class`
+  - `rel w2d:sourceStitchedPointCloud -> /World/W2D/Reconstruction/StitchedTrackPointClouds/<TRACK_ID_SAFE>`
+  - `asset w2d:meshAsset` (external mesh file URI/path)
+  - `string w2d:meshFormat` (recommended `ply` with vertex colors)
+  - `bool w2d:meshHasVertexColors = true`
+  - `bool w2d:sourcePointsHaveColor = true`
+  - `int w2d:vertexCount`
+  - `int w2d:faceCount`
+  - `string w2d:reconstructionMethod` (e.g., `poisson`)
+  - `int w2d:poissonDepth` (or method-equivalent fidelity knob)
+  - `string w2d:producedByRunId`
+- Recommended metadata:
+  - `float w2d:meanEdgeLength`
+  - `float w2d:meshSurfaceAreaM2`
+  - `string w2d:open3dVersion`
+  - `string w2d:sourcePointsSha256`
+- Semantics:
+  - Mesh color must be derived from source colored point clouds (nearest-neighbor color transfer or equivalent).
+  - High-fidelity target means preserving fine geometry detail; no aggressive decimation in default export.
+
+### 15.8 Mesh Reconstruction Outputs (Filesystem Contract)
+- Layer output:
+  - `layers/35_mesh_run_<RUNID>.usdc`
+- External assets per track:
+  - `external/recon/stitched/<TRACK_ID_SAFE>_points_colored.ply`
+  - `external/recon/meshes/<TRACK_ID_SAFE>_mesh_colored.ply`
+- Optional debug/preview outputs:
+  - `external/recon/meshes/<TRACK_ID_SAFE>_mesh_preview.glb`
+  - `external/recon/meshes/<TRACK_ID_SAFE>_mesh_normals.ply`
+
+### 15.9 Open3D High-Fidelity Reconstruction Guidance (Reference Profile)
+- Input:
+  - use colored stitched clouds (`points + RGB`) per track.
+- Normals:
+  - estimate + orient normals before meshing.
+- Reconstruction:
+  - preferred: Poisson (`open3d.geometry.TriangleMesh.create_from_point_cloud_poisson`) with high depth (typically `10-12`).
+  - fallback: ball pivoting for sparse/non-watertight tracks.
+- Cleanup:
+  - remove low-density Poisson vertices; keep threshold conservative to preserve detail.
+- Color:
+  - if mesh is not born colored, transfer colors from source cloud to mesh vertices via nearest-neighbor.
+- Export:
+  - write mesh as `.ply` with vertex colors and record all key params in `w2d:params` provenance.
 
 ---
 
@@ -522,6 +602,7 @@ Recommended:
 - `RUNID = ULID` or `YYYYMMDD_HHMMSS_<short_hash>`
 - Files:
   - `30_tracks_run_<RUNID>.usdc`
+  - `35_mesh_run_<RUNID>.usdc`
   - `40_events_run_<RUNID>.usda`
 
 This enables reproducibility and side‑by‑side comparisons.

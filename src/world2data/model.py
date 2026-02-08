@@ -3,7 +3,7 @@ from __future__ import annotations
 """Shared data model and component interfaces for particle tracking."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from random import Random
 from typing import Mapping, Sequence
 
@@ -74,6 +74,8 @@ class CameraIntrinsics:
     fy_px: float
     cx_px: float
     cy_px: float
+    distortion_model: str = ""
+    distortion_coeffs: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -135,6 +137,7 @@ class FrameContext:
     camera_pose: CameraPose
     camera_intrinsics: CameraIntrinsics
     detections: Sequence[Detection2D]
+    point_cloud_points: Sequence[tuple[float, float, float]] = ()
 
 
 class MotionModel(ABC):
@@ -150,6 +153,8 @@ class CostFunction(ABC):
         particle: Particle,
         detection: Detection2D,
         frame: FrameContext,
+        *,
+        stitched_track_points: Sequence[tuple[float, float, float]] | None = None,
     ) -> float:
         """Likelihood score for particle given one detection."""
 
@@ -176,3 +181,6 @@ class FilterResult:
     frame_index: int
     estimates: Mapping[str, TrackEstimate]
     particles_by_track: Mapping[str, tuple[Particle, ...]]
+    stitched_points_by_track: Mapping[str, tuple[tuple[float, float, float], ...]]
+    track_label_counts_by_track: Mapping[str, Mapping[str, int]] = field(default_factory=dict)
+    diagnostics: Mapping[str, int] = field(default_factory=dict)

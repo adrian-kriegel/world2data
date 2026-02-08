@@ -20,6 +20,14 @@
           glib.dev
           glib
           libxcb
+          libsm
+          libice
+          libx11
+          libxext
+          libxrender
+          libxi
+          libxfixes
+          libxrandr
           libglvnd
           mesa
         ];
@@ -40,8 +48,14 @@
           ];
 
           shellHook = ''
-            # required for pip packages to find libstdc++
+            # make GPU go wroooom
+            export __NV_PRIME_RENDER_OFFLOAD=1
+            export __GLX_VENDOR_LIBRARY_NAME=nvidia
+
+            # required for pip packages to find libstdc++ etc
             export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath runtimeLibs}:$LD_LIBRARY_PATH
+            # OpenCV Qt plugin in pip wheels ships xcb only; force xcb in dev shell.
+            export QT_QPA_PLATFORM=''${QT_QPA_PLATFORM:-xcb}
             # expose host GPU driver libs inside nix shell (needed for torch CUDA)
             if [ -d /run/opengl-driver/lib ]; then
               export LD_LIBRARY_PATH=/run/opengl-driver/lib:$LD_LIBRARY_PATH

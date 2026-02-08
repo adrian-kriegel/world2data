@@ -109,6 +109,19 @@ If there is no match, we create a new set of particles, e.g. "cup 03". It is ini
 
 Selection: When selecting particles, their score comes from the back-projection of the 3d bounding box which is compared to the 2d yolo box, e.g. union over difference. 
 
+Label flicker handling: assignment is done in two phases:
+- label-consistent matching first (same class + IoU threshold)
+- cross-label fallback only when geometric agreement is very strong and most particles support the match
+
+Each track stores a per-label count map (`label -> count`) that is updated from particle support, so a track can accumulate class history such as `{"mug": 29, "remote": 5}` without losing track identity.
+
+Point-cloud logic in the particle filter uses a **PCL-first backend** (`pclpy`/`pcl`) for:
+- cropping observed points by a particle 3D AABB
+- stitching per-track accumulated clouds
+- voxel downsampling and nearest-neighbor alignment
+
+If PCL bindings are unavailable, the runtime currently falls back to a numpy backend unless `require_point_cloud_backend=true` is configured.
+
 ## Camera calibration (quick app)
 
 For ChArUco videos, calibrate intrinsics + distortion and export JSON + USDA camera prim:
@@ -136,6 +149,52 @@ The USDA layer is protocol-aligned:
   - `w2d:imageHeight`
   - `w2d:producedByRunId`
 - Provenance record at `/World/W2D/Provenance/runs/<RUNID>`
+
+## YOLO observations adapter
+
+Run YOLO on a video and write a protocol-aligned observations layer with raw detections:
+
+```bash
+world2data-yolo-adapter \
+  --video res/video_360p_30fps.mp4 \
+  --model yolov8n.pt \
+  --output-usd outputs/yolo_observations.usda \
+  --frame-step 1
+```
+
+Output paths are authored under `/World/W2D/Observations/YOLO/**` and include provenance at `/World/W2D/Provenance/runs/<RUNID>`.
+
+## Particle filter adapter
+
+Run particle tracking from protocol layers (calibration + camera poses + YOLO + stamped point cloud):
+
+```bash
+world2data-particle-filter-adapter \
+  --calibration-layer outputs/camera_calibration.usda \
+  --camera-poses-layer outputs/camera_poses.usda \
+  --yolo-layer outputs/yolo_observations.usda \
+  --point-cloud-layer outputs/point_cloud_frames.usda \
+  --output-usd outputs/particle_tracks.usda
+```
+
+Tracks are written under `/World/W2D/Tracks/ParticleFilter/**` and entities under `/World/W2D/Entities/Objects/**`.
+
+## Open3D mesh adapter
+
+Generate colored, high-fidelity meshes from stitched PF point clouds and write a protocol-aligned mesh layer:
+
+```bash
+world2data-mesh-adapter \
+  --tracks-layer outputs/particle_tracks.usda \
+  --point-cloud-layer outputs/point_cloud_frames.usda \
+  --output-usd outputs/mesh_reconstruction.usda \
+  --poisson-depth 11
+```
+
+Outputs:
+- mesh index prims under `/World/W2D/Reconstruction/Meshes/**`
+- stitched colored cloud index prims under `/World/W2D/Reconstruction/StitchedTrackPointClouds/**`
+- external assets in `external/recon/stitched/*_points_colored.ply` and `external/recon/meshes/*_mesh_colored.ply`
 
 
 
@@ -274,6 +333,7 @@ If no models are available, falls back to legacy Gemini-only pipeline.
 | File | Description |
 |------|-------------|
 | `*.usda` | OpenUSD scene: colored point cloud, cameras, physics objects, confidence |
+| `mesh_reconstruction.usda` | OpenUSD layer indexing colored stitched PF clouds + colored Open3D meshes |
 | `*_scene_graph.json` | Full 4D scene graph: objects, reasoning, YOLO summary, evaluation |
 | `*.rrd` | Interactive Rerun recording (temporal 3D + all model outputs) |
 | `*.ply` | Colored point cloud (viewable in any 3D tool) |

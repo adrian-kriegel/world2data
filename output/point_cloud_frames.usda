@@ -1,0 +1,1139 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    endTimeCode = 109
+    metersPerUnit = 1
+    startTimeCode = 0
+    timeCodesPerSecond = 5.001000964287738
+    upAxis = "Y"
+)
+
+def Xform "World"
+{
+    def Scope "W2D"
+    {
+        def Scope "Reconstruction"
+        {
+            def Scope "PointCloudFrames"
+            {
+                def Scope "f_000000"
+                {
+                    custom int w2d:frameIndex = 0
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 0
+                }
+
+                def Scope "f_000001"
+                {
+                    custom int w2d:frameIndex = 1
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 0.1999599694423224
+                }
+
+                def Scope "f_000002"
+                {
+                    custom int w2d:frameIndex = 2
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 0.3999199388846448
+                }
+
+                def Scope "f_000003"
+                {
+                    custom int w2d:frameIndex = 3
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 0.5998799083269671
+                }
+
+                def Scope "f_000004"
+                {
+                    custom int w2d:frameIndex = 4
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 0.7998398777692896
+                }
+
+                def Scope "f_000005"
+                {
+                    custom int w2d:frameIndex = 5
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 0.999799847211612
+                }
+
+                def Scope "f_000006"
+                {
+                    custom int w2d:frameIndex = 6
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 1.1997598166539343
+                }
+
+                def Scope "f_000007"
+                {
+                    custom int w2d:frameIndex = 7
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 1.3997197860962567
+                }
+
+                def Scope "f_000008"
+                {
+                    custom int w2d:frameIndex = 8
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 1.599679755538579
+                }
+
+                def Scope "f_000009"
+                {
+                    custom int w2d:frameIndex = 9
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 1.7996397249809015
+                }
+
+                def Scope "f_000010"
+                {
+                    custom int w2d:frameIndex = 10
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 1.999599694423224
+                }
+
+                def Scope "f_000011"
+                {
+                    custom int w2d:frameIndex = 11
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 2.1995596638655464
+                }
+
+                def Scope "f_000012"
+                {
+                    custom int w2d:frameIndex = 12
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 2.3995196333078685
+                }
+
+                def Scope "f_000013"
+                {
+                    custom int w2d:frameIndex = 13
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 2.599479602750191
+                }
+
+                def Scope "f_000014"
+                {
+                    custom int w2d:frameIndex = 14
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 2.7994395721925134
+                }
+
+                def Scope "f_000015"
+                {
+                    custom int w2d:frameIndex = 15
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 2.999399541634836
+                }
+
+                def Scope "f_000016"
+                {
+                    custom int w2d:frameIndex = 16
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 3.199359511077158
+                }
+
+                def Scope "f_000017"
+                {
+                    custom int w2d:frameIndex = 17
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 3.3993194805194804
+                }
+
+                def Scope "f_000018"
+                {
+                    custom int w2d:frameIndex = 18
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 3.599279449961803
+                }
+
+                def Scope "f_000019"
+                {
+                    custom int w2d:frameIndex = 19
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 3.7992394194041252
+                }
+
+                def Scope "f_000020"
+                {
+                    custom int w2d:frameIndex = 20
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 3.999199388846448
+                }
+
+                def Scope "f_000021"
+                {
+                    custom int w2d:frameIndex = 21
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 4.19915935828877
+                }
+
+                def Scope "f_000022"
+                {
+                    custom int w2d:frameIndex = 22
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 4.399119327731093
+                }
+
+                def Scope "f_000023"
+                {
+                    custom int w2d:frameIndex = 23
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 4.599079297173415
+                }
+
+                def Scope "f_000024"
+                {
+                    custom int w2d:frameIndex = 24
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 4.799039266615737
+                }
+
+                def Scope "f_000025"
+                {
+                    custom int w2d:frameIndex = 25
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 4.99899923605806
+                }
+
+                def Scope "f_000026"
+                {
+                    custom int w2d:frameIndex = 26
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 5.198959205500382
+                }
+
+                def Scope "f_000027"
+                {
+                    custom int w2d:frameIndex = 27
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 5.398919174942704
+                }
+
+                def Scope "f_000028"
+                {
+                    custom int w2d:frameIndex = 28
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 5.598879144385027
+                }
+
+                def Scope "f_000029"
+                {
+                    custom int w2d:frameIndex = 29
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 5.798839113827349
+                }
+
+                def Scope "f_000030"
+                {
+                    custom int w2d:frameIndex = 30
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 5.998799083269672
+                }
+
+                def Scope "f_000031"
+                {
+                    custom int w2d:frameIndex = 31
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 6.198759052711994
+                }
+
+                def Scope "f_000032"
+                {
+                    custom int w2d:frameIndex = 32
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 6.398719022154316
+                }
+
+                def Scope "f_000033"
+                {
+                    custom int w2d:frameIndex = 33
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 6.598678991596639
+                }
+
+                def Scope "f_000034"
+                {
+                    custom int w2d:frameIndex = 34
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 6.798638961038961
+                }
+
+                def Scope "f_000035"
+                {
+                    custom int w2d:frameIndex = 35
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 6.9985989304812835
+                }
+
+                def Scope "f_000036"
+                {
+                    custom int w2d:frameIndex = 36
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 7.198558899923606
+                }
+
+                def Scope "f_000037"
+                {
+                    custom int w2d:frameIndex = 37
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 7.398518869365929
+                }
+
+                def Scope "f_000038"
+                {
+                    custom int w2d:frameIndex = 38
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 7.5984788388082505
+                }
+
+                def Scope "f_000039"
+                {
+                    custom int w2d:frameIndex = 39
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 7.798438808250573
+                }
+
+                def Scope "f_000040"
+                {
+                    custom int w2d:frameIndex = 40
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 7.998398777692896
+                }
+
+                def Scope "f_000041"
+                {
+                    custom int w2d:frameIndex = 41
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 8.198358747135218
+                }
+
+                def Scope "f_000042"
+                {
+                    custom int w2d:frameIndex = 42
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 8.39831871657754
+                }
+
+                def Scope "f_000043"
+                {
+                    custom int w2d:frameIndex = 43
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 8.598278686019862
+                }
+
+                def Scope "f_000044"
+                {
+                    custom int w2d:frameIndex = 44
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 8.798238655462185
+                }
+
+                def Scope "f_000045"
+                {
+                    custom int w2d:frameIndex = 45
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 8.998198624904507
+                }
+
+                def Scope "f_000046"
+                {
+                    custom int w2d:frameIndex = 46
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 9.19815859434683
+                }
+
+                def Scope "f_000047"
+                {
+                    custom int w2d:frameIndex = 47
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 9.398118563789152
+                }
+
+                def Scope "f_000048"
+                {
+                    custom int w2d:frameIndex = 48
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 9.598078533231474
+                }
+
+                def Scope "f_000049"
+                {
+                    custom int w2d:frameIndex = 49
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 9.798038502673798
+                }
+
+                def Scope "f_000050"
+                {
+                    custom int w2d:frameIndex = 50
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 9.99799847211612
+                }
+
+                def Scope "f_000051"
+                {
+                    custom int w2d:frameIndex = 51
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 10.197958441558441
+                }
+
+                def Scope "f_000052"
+                {
+                    custom int w2d:frameIndex = 52
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 10.397918411000765
+                }
+
+                def Scope "f_000053"
+                {
+                    custom int w2d:frameIndex = 53
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 10.597878380443086
+                }
+
+                def Scope "f_000054"
+                {
+                    custom int w2d:frameIndex = 54
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 10.797838349885408
+                }
+
+                def Scope "f_000055"
+                {
+                    custom int w2d:frameIndex = 55
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 10.997798319327732
+                }
+
+                def Scope "f_000056"
+                {
+                    custom int w2d:frameIndex = 56
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 11.197758288770054
+                }
+
+                def Scope "f_000057"
+                {
+                    custom int w2d:frameIndex = 57
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 11.397718258212375
+                }
+
+                def Scope "f_000058"
+                {
+                    custom int w2d:frameIndex = 58
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 11.597678227654699
+                }
+
+                def Scope "f_000059"
+                {
+                    custom int w2d:frameIndex = 59
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 11.79763819709702
+                }
+
+                def Scope "f_000060"
+                {
+                    custom int w2d:frameIndex = 60
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 11.997598166539344
+                }
+
+                def Scope "f_000061"
+                {
+                    custom int w2d:frameIndex = 61
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 12.197558135981666
+                }
+
+                def Scope "f_000062"
+                {
+                    custom int w2d:frameIndex = 62
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 12.397518105423988
+                }
+
+                def Scope "f_000063"
+                {
+                    custom int w2d:frameIndex = 63
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 12.597478074866311
+                }
+
+                def Scope "f_000064"
+                {
+                    custom int w2d:frameIndex = 64
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 12.797438044308633
+                }
+
+                def Scope "f_000065"
+                {
+                    custom int w2d:frameIndex = 65
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 12.997398013750955
+                }
+
+                def Scope "f_000066"
+                {
+                    custom int w2d:frameIndex = 66
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 13.197357983193278
+                }
+
+                def Scope "f_000067"
+                {
+                    custom int w2d:frameIndex = 67
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 13.3973179526356
+                }
+
+                def Scope "f_000068"
+                {
+                    custom int w2d:frameIndex = 68
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 13.597277922077922
+                }
+
+                def Scope "f_000069"
+                {
+                    custom int w2d:frameIndex = 69
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 13.797237891520245
+                }
+
+                def Scope "f_000070"
+                {
+                    custom int w2d:frameIndex = 70
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 13.997197860962567
+                }
+
+                def Scope "f_000071"
+                {
+                    custom int w2d:frameIndex = 71
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 14.19715783040489
+                }
+
+                def Scope "f_000072"
+                {
+                    custom int w2d:frameIndex = 72
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 14.397117799847212
+                }
+
+                def Scope "f_000073"
+                {
+                    custom int w2d:frameIndex = 73
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 14.597077769289534
+                }
+
+                def Scope "f_000074"
+                {
+                    custom int w2d:frameIndex = 74
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 14.797037738731857
+                }
+
+                def Scope "f_000075"
+                {
+                    custom int w2d:frameIndex = 75
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 14.99699770817418
+                }
+
+                def Scope "f_000076"
+                {
+                    custom int w2d:frameIndex = 76
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 15.196957677616501
+                }
+
+                def Scope "f_000077"
+                {
+                    custom int w2d:frameIndex = 77
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 15.396917647058824
+                }
+
+                def Scope "f_000078"
+                {
+                    custom int w2d:frameIndex = 78
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 15.596877616501146
+                }
+
+                def Scope "f_000079"
+                {
+                    custom int w2d:frameIndex = 79
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 15.796837585943468
+                }
+
+                def Scope "f_000080"
+                {
+                    custom int w2d:frameIndex = 80
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 15.996797555385792
+                }
+
+                def Scope "f_000081"
+                {
+                    custom int w2d:frameIndex = 81
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 16.196757524828115
+                }
+
+                def Scope "f_000082"
+                {
+                    custom int w2d:frameIndex = 82
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 16.396717494270437
+                }
+
+                def Scope "f_000083"
+                {
+                    custom int w2d:frameIndex = 83
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 16.59667746371276
+                }
+
+                def Scope "f_000084"
+                {
+                    custom int w2d:frameIndex = 84
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 16.79663743315508
+                }
+
+                def Scope "f_000085"
+                {
+                    custom int w2d:frameIndex = 85
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 16.996597402597402
+                }
+
+                def Scope "f_000086"
+                {
+                    custom int w2d:frameIndex = 86
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 17.196557372039724
+                }
+
+                def Scope "f_000087"
+                {
+                    custom int w2d:frameIndex = 87
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 17.39651734148205
+                }
+
+                def Scope "f_000088"
+                {
+                    custom int w2d:frameIndex = 88
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 17.59647731092437
+                }
+
+                def Scope "f_000089"
+                {
+                    custom int w2d:frameIndex = 89
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 17.796437280366693
+                }
+
+                def Scope "f_000090"
+                {
+                    custom int w2d:frameIndex = 90
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 17.996397249809014
+                }
+
+                def Scope "f_000091"
+                {
+                    custom int w2d:frameIndex = 91
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 18.196357219251336
+                }
+
+                def Scope "f_000092"
+                {
+                    custom int w2d:frameIndex = 92
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 18.39631718869366
+                }
+
+                def Scope "f_000093"
+                {
+                    custom int w2d:frameIndex = 93
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 18.596277158135983
+                }
+
+                def Scope "f_000094"
+                {
+                    custom int w2d:frameIndex = 94
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 18.796237127578305
+                }
+
+                def Scope "f_000095"
+                {
+                    custom int w2d:frameIndex = 95
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 18.996197097020627
+                }
+
+                def Scope "f_000096"
+                {
+                    custom int w2d:frameIndex = 96
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 19.19615706646295
+                }
+
+                def Scope "f_000097"
+                {
+                    custom int w2d:frameIndex = 97
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 19.39611703590527
+                }
+
+                def Scope "f_000098"
+                {
+                    custom int w2d:frameIndex = 98
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 19.596077005347595
+                }
+
+                def Scope "f_000099"
+                {
+                    custom int w2d:frameIndex = 99
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 19.796036974789917
+                }
+
+                def Scope "f_000100"
+                {
+                    custom int w2d:frameIndex = 100
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 19.99599694423224
+                }
+
+                def Scope "f_000101"
+                {
+                    custom int w2d:frameIndex = 101
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 20.19595691367456
+                }
+
+                def Scope "f_000102"
+                {
+                    custom int w2d:frameIndex = 102
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 20.395916883116882
+                }
+
+                def Scope "f_000103"
+                {
+                    custom int w2d:frameIndex = 103
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 20.595876852559208
+                }
+
+                def Scope "f_000104"
+                {
+                    custom int w2d:frameIndex = 104
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 20.79583682200153
+                }
+
+                def Scope "f_000105"
+                {
+                    custom int w2d:frameIndex = 105
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 20.99579679144385
+                }
+
+                def Scope "f_000106"
+                {
+                    custom int w2d:frameIndex = 106
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 21.195756760886173
+                }
+
+                def Scope "f_000107"
+                {
+                    custom int w2d:frameIndex = 107
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 21.395716730328495
+                }
+
+                def Scope "f_000108"
+                {
+                    custom int w2d:frameIndex = 108
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 21.595676699770816
+                }
+
+                def Scope "f_000109"
+                {
+                    custom int w2d:frameIndex = 109
+                    custom int w2d:pointCount = 6099259
+                    custom asset w2d:pointsAsset = @../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply@
+                    custom string w2d:pointsFormat = "ply"
+                    custom string w2d:producedByRunId = "demo_output_5fps_adapted"
+                    custom double w2d:timestampSec = 21.795636669213142
+                }
+            }
+        }
+
+        def Scope "Provenance"
+        {
+            def Scope "runs"
+            {
+                def Scope "demo_output_5fps_adapted"
+                {
+                    custom string w2d:component = "reconstruction.point_cloud_frames_index"
+                    custom string w2d:gitCommit = "unknown"
+                    custom string w2d:modelName = "world2data_demo_converter"
+                    custom string w2d:modelVersion = "0.1"
+                    custom string w2d:params = '{"frame_count": 110, "points_asset": "../../../../../run/media/adrian/Crucial X9/files_World2data/demo_output_5fps/demo_scene.ply", "points_count": 6099259}'
+                    custom string w2d:runId = "demo_output_5fps_adapted"
+                    custom string w2d:timestampIso8601 = "2026-02-08T11:20:32.631833+00:00"
+                }
+            }
+        }
+    }
+}
+

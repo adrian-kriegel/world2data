@@ -1,227 +1,300 @@
 # World2Data Revised Plan
 
 Last updated: 2026-02-08  
-Purpose: implementation overview of the current World2Data system, focused on how it runs end-to-end and how data moves through it.
+Purpose: implementation plan for delivering the World2Data pipeline with `W2D_OpenUSD_Layering_Protocol.md` as protocol authority and the current `src/world2data` runtime as execution base.
 
-## 1) System Goal
+## 1) Ground Truths and Goal
 
-World2Data converts monocular video into inspectable 3D + temporal scene data.
+World2Data has two authoritative references:
 
-For each run, the system produces:
+- Runtime implementation in `src/world2data/` and `src/world2data/pipeline/`
+- OpenUSD composition contract in `W2D_OpenUSD_Layering_Protocol.md`
 
-- reconstructed 3D geometry and camera trajectory
-- object-level scene understanding from multiple models
-- reasoning-enriched scene metadata
-- review-ready artifacts for USD, Rerun, and JSON workflows
+Primary goal:
 
-## 2) Runtime Architecture
+- produce protocol-compliant, layered OpenUSD outputs
+- keep heavy geometry external
+- preserve temporal point provenance so the point cloud is time-aware, auditable, and animatable
 
-### 2.1 Package Layout
+## 2) Current Runtime Baseline
 
-- Core package: `src/world2data/`
-- Pipeline package: `src/world2data/pipeline/`
-- Tests: `tests/`
-- Data roots:
-  - `data/inputs/`
-  - `data/models/`
-  - `data/outputs/`
+### 2.1 Active Entrypoints
 
-### 2.2 Entrypoints
+- `world2data-demo`: full multi-model run (`src/world2data/pipeline/demo_run.py`)
+- `world2data-calibration`: ChArUco calibration (`src/world2data/calibration.py`)
+- `world2data-generate-demo`: demo summary utilities (`src/world2data/pipeline/generate_demo.py`)
+- `world2data-review`: human review UI (`src/world2data/pipeline/human_review_ui.py`)
 
-The project exposes these CLI commands via `pyproject.toml`:
+### 2.2 Data Roots
 
-- `world2data` -> lightweight core particle-filter smoke entrypoint
-- `world2data-calibration` -> ChArUco camera calibration tool
-- `world2data-demo` -> full multi-model demo runner
-- `world2data-generate-demo` -> summary/report helper for generated outputs
-- `world2data-review` -> Gradio human-review UI
+- inputs: `data/inputs/`
+- model weights: `data/models/`
+- generated artifacts: `data/outputs/`
 
-## 3) End-to-End Processing Flow
+### 2.3 Active Pipeline Flow
+
+- keyframe extraction
+- MASt3R reconstruction
+- YOLO detection
+- SAM3 segmentation (if available)
+- Gemini scene analysis + reasoning
+- USD export + scene graph JSON + Rerun recording + PLY
+
+## 3) Protocol-Driven Target Output Shape
+
+Every production run writes a run-scoped scene bundle with OpenUSD composition:
 
 ```text
-+-----------------------------+
-| Input Video (.mp4)          |
-| data/inputs/... or any path |
-+--------------+--------------+
-               |
-               v
-+-----------------------------+
-| Optional Camera Calibration |
-| world2data-calibration      |
-+--------------+--------------+
-               |
-               v
-+-----------------------------+
-| World2DataPipeline          |
-| (Ralph Loop)               |
-+--------------+--------------+
-               |
-               v
-+-----------------------------+
-| Step 1: Keyframe extraction |
-| L1 diff + FPS sampling      |
-+--------------+--------------+
-               |
-               v
-+-----------------------------+
-| Step 2: MASt3R recon        |
-| depth, poses, point clouds  |
-+--------------+--------------+
-               |
-     +---------+----------+--------------------+
-     |                    |                    |
-     v                    v                    v
-+-----------+     +---------------+     +----------------+
-| YOLOv8x   |     | SAM3          |     | Gemini Video   |
-| detection |     | segmentation  |     | scene analysis |
-+-----------+     +---------------+     +----------------+
-     \                |                    /
-      \               |                   /
-       +--------------+------------------+
-                      |
-                      v
-         +------------------------------+
-         | Scene fusion + reasoning     |
-         | confidence + review flags    |
-         +--------------+---------------+
-                        |
-                        v
-         +------------------------------+
-         | OpenUSD + sidecar export     |
-         | + Rerun + PLY export         |
-         +--------------+---------------+
-                        |
-         +--------------+------------------------------+
-         |                                             |
-         v                                             v
-+------------------------+                  +------------------------+
-| Demo summary / scripts |                  | Human review workflow  |
-| world2data-generate-demo|                 | world2data-review      |
-+------------------------+                  +------------------------+
+data/outputs/runs/<RUNID>/
+  scene/
+    scene.usda
+    layers/
+      00_base.usda
+      10_inputs_run_<RUNID>.usda
+      20_recon_run_<RUNID>.usda
+      25_yolo_run_<RUNID>.usda
+      30_tracks_run_<RUNID>.usda
+      40_events_run_<RUNID>.usda
+      90_overrides.usda
+      99_session.usda
+    external/
+      inputs/
+      recon/
+      observations/
+      tracking/
 ```
 
-## 4) Model Stack and Roles
+Composition rule:
 
-### 4.1 Geometry
+- `scene/scene.usda` contains stage metadata + ordered sublayers only
+- heavy assets are referenced via relative `asset` paths
 
-- MASt3R handles geometric reconstruction from keyframes.
-- Output includes per-frame geometry, camera poses, and accumulated point cloud.
+## 4) Temporal Point-Cloud Contract (Non-Static by Design)
 
-### 4.2 Detection and Segmentation
+The point cloud is not a single static object in system-of-record form.
 
-- YOLOv8 (`yolov8x-seg`) provides 2D detections and masks.
-- SAM3 adds prompt-driven segmentation/tracking when available.
+### 4.1 Source of Truth for Geometry
 
-### 4.3 Semantic Analysis and Reasoning
+Per-frame stamped point assets are authoritative:
 
-- Gemini video analysis contributes scene-level objects/events.
-- Scene fusion combines multi-model evidence into 4D object records.
-- Reasoning output contributes confidence, traceability, and review flags.
+- `/World/W2D/Reconstruction/PointCloudFrames/f_<FRAME>`
+- required attrs:
+  - `w2d:frameIndex`
+  - `w2d:timestampSec`
+  - `w2d:pointsAsset`
+  - `w2d:pointCount`
+  - `w2d:pointsFormat`
+  - `w2d:producedByRunId`
 
-## 5) Calibration Workflow
+### 4.2 Point Lineage and Update Semantics
 
-Camera calibration is a first-class workflow via `world2data-calibration`.
+Each point observation is traceable to its origin frame and source asset.
 
-- Input: ChArUco calibration video
-- Output JSON (default): `data/outputs/camera_calibration.json`
-- Output USDA (default): `data/outputs/camera_calibration.usda`
-- USDA includes a calibration camera prim and custom `w2d:*` calibration attributes.
+Required external lineage table per run:
 
-Recommended command:
+- `scene/external/recon/point_lineage_<RUNID>.parquet`
+- columns:
+  - `point_uid`
+  - `frame_index_origin`
+  - `timestamp_sec_origin`
+  - `source_points_asset`
+  - `x`, `y`, `z`
+  - `r`, `g`, `b`
+  - `confidence`
+  - `state` (`active`, `superseded`, `retired`)
+  - `superseded_by_point_uid` (nullable)
+
+`point_uid` generation rule:
+
+- deterministic hash of `(run_id, frame_index_origin, source_points_asset, local_point_index)`
+
+### 4.3 Animation and Map Refresh Behavior
+
+Rerun and demo views must support temporal map updates:
+
+- current frame view shows only frame-local points (`world/current_view`)
+- active map view shows points with `state=active` at time `t`
+- superseded/retired points are excluded from active map at time `t`
+
+This guarantees old geometry can be ignored and replaced when newer observations improve map consistency.
+
+## 5) Implementation Work Packages
+
+## WP1: Make Layered OpenUSD the Default Pipeline Output
+
+Scope:
+
+- integrate `usd_layers.py` into `World2DataPipeline` export path
+- write run-scoped layered scene bundle under `data/outputs/runs/<RUNID>/scene/`
+
+Deliverables:
+
+- default output is `scene/scene.usda` + layer stack
+- no direct dependency on monolithic `*.usda` for primary flow
+
+Acceptance criteria:
+
+- opening `scene/scene.usda` composes all authored layers
+- run is reproducible with stable layer ordering and run IDs
+
+## WP2: Externalize Reconstruction Payloads per Protocol
+
+Scope:
+
+- write per-frame point assets to `scene/external/recon/`
+- stop authoring dense cloud arrays in protocol layers
+- keep only compact metadata in `20_recon_run_<RUNID>.usda`
+
+Deliverables:
+
+- point assets indexed by frame
+- camera poses/intrinsics remain in recon layer
+
+Acceptance criteria:
+
+- protocol layers contain no dense point arrays
+- all frame point assets resolve via relative `asset` paths
+
+## WP3: Perception and Tracking Layer Contracts
+
+Scope:
+
+- add YOLO observations layer writer (`25_yolo_run_<RUNID>.usda`)
+- add particle-filter tracks writer (`30_tracks_run_<RUNID>.usda`)
+- align namespaces and ownership with protocol
+
+Deliverables:
+
+- `/World/W2D/Observations/YOLO/**`
+- `/World/W2D/Entities/**`, `/World/W2D/Tracks/**`
+
+Acceptance criteria:
+
+- all entities have stable `w2d:uid`
+- `w2d:producedByRunId` exists on authored output prims
+
+## WP4: Temporal Point Lineage + Rerun Adapter
+
+Scope:
+
+- generate point lineage parquet per run
+- update Rerun emission to use lifecycle states
+- support active-map rendering and point retirement/supersession
+
+Deliverables:
+
+- `point_lineage_<RUNID>.parquet`
+- deterministic active map at any timeline position
+
+Acceptance criteria:
+
+- every rendered point has traceable lineage back to source frame asset
+- Rerun active map can drop old/superseded points as timeline advances
+
+## WP5: Calibration Consumption in Main Pipeline
+
+Scope:
+
+- add pipeline inputs for calibration artifacts
+- inject calibration intrinsics/distortion into recon/tracking contracts
+
+Deliverables:
+
+- calibration-aware run configuration
+- calibration provenance in run metadata
+
+Acceptance criteria:
+
+- run can consume `camera_calibration.json` and/or calibration USDA
+- intrinsics contract is available in composed stage for downstream consumers
+
+## WP6: Run Manifests, Checkpoints, and Resume
+
+Scope:
+
+- create run manifest (`run_manifest_<RUNID>.json`)
+- stage-wise checkpoint records and resume support
+- deterministic restart semantics
+
+Deliverables:
+
+- manifest with stage status, artifacts, hashes
+- resume command that skips validated completed stages
+
+Acceptance criteria:
+
+- interrupted run restarts from last valid stage without recomputing completed stages
+- manifest captures full artifact graph and provenance references
+
+## WP7: Protocol CI Gates
+
+Scope:
+
+- enforce protocol validations in automated tests/CI
+
+Checks:
+
+- composition opens cleanly
+- namespace ownership rules
+- `w2d:uid` presence for entities
+- relative `asset` path resolution
+- provenance run records
+- no dense point arrays in protocol layers
+- temporal point lineage file exists and validates schema
+
+Acceptance criteria:
+
+- CI fails on first protocol violation with actionable diagnostics
+
+## 6) Execution Sequence
+
+### Phase 1 (Foundation)
+
+- WP1, WP2, WP5
+- output structure + calibration + external recon indexing
+
+### Phase 2 (Temporal Fidelity)
+
+- WP3, WP4
+- full observation/tracking contracts + lineage-driven dynamic map behavior
+
+### Phase 3 (Operational Hardening)
+
+- WP6, WP7
+- resumeability + CI protocol enforcement
+
+## 7) Demo and Validation Commands
+
+### 7.1 Full pipeline demo run
 
 ```bash
-uv run world2data-calibration \
-  --video data/inputs/camera_calibration.mp4 \
-  --output-json data/outputs/camera_calibration.json \
-  --output-usda data/outputs/camera_calibration.usda
+uv run world2data-demo --video data/inputs/video_2026-02-08_09-36-42.mp4 --output data/outputs/demo_output --fps 5
 ```
 
-## 6) Output Artifacts and Data Handling
-
-### 6.1 Output Location
-
-Default demo outputs are written under:
-
-- `data/outputs/demo_output/`
-
-The demo runner writes a complete bundle per run:
-
-- `demo_scene.usda`
-- `demo_scene_scene_graph.json`
-- `demo_scene.rrd`
-- `demo_scene.ply`
-- `demo_annotated.mp4`
-- `demo_human_review.json`
-- `keyframes/`
-- `cache/`
-
-### 6.2 Intermediate Data
-
-During processing, the pipeline uses:
-
-- `keyframe_dir` for extracted keyframes
-- `cache_dir` for MASt3R artifacts and sliding-window reconstruction caches
-
-The demo runner configures these as persistent subfolders inside the chosen output directory, so runs are fully inspectable and portable.
-
-### 6.3 Point Cloud Representation
-
-Point cloud data is persisted as:
-
-- `.ply` for external 3D tools
-- USD `Points` prims for scene-level visualization and composition
-
-## 7) OpenUSD Authoring
-
-World2Data includes two USD authoring paths:
-
-- Pipeline scene export (`controller.py`) for direct end-to-end runs
-- Layered USD authoring utility (`usd_layers.py`) for protocol-driven composed stages
-
-Layered writer supports:
-
-- base/input/recon/tracks/events/overrides/session layers
-- deterministic assembly stage generation
-- provenance records under `/World/W2D/Provenance/runs/...`
-
-## 8) Run Commands
-
-### 8.1 Full demo pipeline
+### 7.2 Calibration run
 
 ```bash
-uv run world2data-demo \
-  --video data/inputs/video_2026-02-08_09-36-42.mp4 \
-  --output data/outputs/demo_output \
-  --fps 5
+uv run world2data-calibration --video data/inputs/camera_calibration.mp4 --output-json data/outputs/camera_calibration.json --output-usda data/outputs/camera_calibration.usda
 ```
 
-### 8.2 Generate demo summary from JSON
-
-```bash
-uv run world2data-generate-demo \
-  --json data/outputs/demo_output/demo_scene_scene_graph.json
-```
-
-### 8.3 Launch human review UI
-
-```bash
-uv run world2data-review \
-  --json data/outputs/demo_output/demo_human_review.json
-```
-
-### 8.4 Overnight integration validation
+### 7.3 Overnight integration validation
 
 ```bash
 uv run python -m pytest tests/test_pipeline.py -v --overnight -k overnight
 ```
 
-## 9) Validation and Test Coverage
+### 7.4 Layered USD protocol validation target
 
-The test suite validates:
+- run layered-writer tests and scene validation in `tests/test_usd_layers.py`
+- enforce added CI gates for temporal lineage and no-dense-array rule
 
-- calibration outputs (`tests/test_calibration.py`)
-- pipeline stages and overnight end-to-end coverage (`tests/test_pipeline.py`)
-- demo runner components (`tests/test_demo_components.py`)
-- OpenUSD compatibility (`tests/test_openusd_compat.py`)
-- layered USD protocol authoring/validation (`tests/test_usd_layers.py`)
-- particle filter behavior (`tests/test_particle_filter.py`)
+## 8) Definition of Done
+
+A run is done when:
+
+- `scene/scene.usda` composes all protocol layers successfully
+- reconstruction point data is externalized and frame-indexed
+- point lineage is persisted and queryable
+- Rerun demonstrates temporal point updates (active vs superseded/retired)
+- outputs are fully provenance-linked to run and model configuration
+- CI protocol gates pass without exemptions

@@ -32,7 +32,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
 
+import hashlib
+
 import numpy as np
+
+try:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    _HAS_PARQUET = True
+except ImportError:
+    _HAS_PARQUET = False
 
 _SAFE_PRIM_RE = re.compile(r"[^A-Za-z0-9_]")
 
@@ -112,6 +121,29 @@ class EventRecord:
     t_end: int                  # frame index
     confidence: float = 0.0
     description: str = ""
+
+
+@dataclass
+class YOLOFrameRecord:
+    """Per-frame YOLO detection result for the observations layer."""
+    frame_index: int
+    timestamp_sec: float
+    image_width: int
+    image_height: int
+    labels: list[str] = field(default_factory=list)
+    class_ids: list[int] = field(default_factory=list)
+    scores: list[float] = field(default_factory=list)
+    boxes_xyxy: list[tuple] = field(default_factory=list)  # [(x1,y1,x2,y2), ...]
+
+
+@dataclass
+class PointCloudFrameRecord:
+    """Per-frame point cloud metadata for externalized recon assets."""
+    frame_index: int
+    timestamp_sec: float
+    points_asset_path: str          # relative path to PLY file
+    point_count: int
+    points_format: str = "ply"
 
 
 @dataclass

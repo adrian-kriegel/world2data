@@ -304,20 +304,20 @@ The `.usda` file can be opened in:
 ## Running Tests
 
 ```bash
-# All fast tests (~15s)
-uv run python -m pytest tests/ -v
+# Fast tests (mock geometry, no GPU, ~15s)
+uv run python -m pytest test_pipeline.py -v
 
 # Excluding API-dependent tests
-uv run python -m pytest tests/ -v -k "not gemini"
+uv run python -m pytest test_pipeline.py -v -k "not gemini"
 
 # OVERNIGHT: Full pipeline on real video with MASt3R + Gemini (~3-5 min)
-uv run python -m pytest tests/ -v --overnight
+uv run python -m pytest test_pipeline.py -v --overnight
 
 # Overnight test only
-uv run python -m pytest tests/ -v --overnight -k overnight
+uv run python -m pytest test_pipeline.py -v --overnight -k overnight
 ```
 
-The overnight test saves outputs to `data/outputs/overnight_output/` for manual inspection.
+The overnight test saves outputs to `overnight_output/` for manual inspection.
 
 ## Overnight Test Results
 
@@ -325,16 +325,16 @@ To view the overnight test output:
 
 ```bash
 # View interactive 3D recording
-uv run rerun data/outputs/overnight_output/overnight.rrd
+uv run rerun overnight_output/overnight.rrd
 
 # View pipeline summary
-uv run python -m world2data.pipeline.generate_demo --json data/outputs/overnight_output/overnight_scene_graph.json
+uv run python -m world2data.pipeline.generate_demo --json overnight_output/overnight_scene_graph.json
 
 # View point cloud externally
-# Open data/outputs/overnight_output/overnight.ply in MeshLab or CloudCompare
+# Open overnight_output/overnight.ply in MeshLab or CloudCompare
 
 # View USD in Omniverse
-# Open data/outputs/overnight_output/overnight.usda
+# Open overnight_output/overnight.usda
 ```
 
 ## Demo Generator
@@ -442,8 +442,7 @@ world2data/
       visualize_impact.py       -- Rerun pitch visualization
   data/
     inputs/                     -- Video files for pipeline input (gitignored .mp4s)
-    models/                     -- YOLO weights etc. (auto-downloaded, gitignored)
-    outputs/                    -- All generated pipeline artifacts (gitignored)
+    outputs/                    -- Generated calibration + pipeline artifacts
   tests/
     generate_test_video.py      -- Synthetic test video generator
     test_calibration.py         -- Camera calibration tests
@@ -495,3 +494,7 @@ provenance on every prim, deterministic layer ordering.
 - https://rerun.io/
 - https://openusd.org/
 - https://ai.google.dev/ (Gemini API)
+  - `w2d:imageWidth`
+  - `w2d:imageHeight`
+  - `w2d:producedByRunId`
+- Provenance record at `/World/W2D/Provenance/runs/<RUNID>`

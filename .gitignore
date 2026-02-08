@@ -16,6 +16,7 @@ build/
 
 # MASt3R checkpoints (large files)
 mast3r/checkpoints/*.pth
+mast3r/
 
 # Pipeline outputs
 output.usda

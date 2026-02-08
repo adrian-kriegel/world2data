@@ -463,7 +463,13 @@ Return ONLY valid JSON:
                 end = len(lines) - 1 if lines[-1].strip() == "```" else len(lines)
                 json_str = "\n".join(lines[start:end])
 
-            detections = json.loads(json_str).get("detections", [])
+            parsed = json.loads(json_str)
+            if isinstance(parsed, list):
+                detections = parsed
+            elif isinstance(parsed, dict):
+                detections = parsed.get("detections", parsed.get("objects", []))
+            else:
+                detections = []
             print(f"  Gemini detected {len(detections)} objects in 2D")
 
             # Back-project each detection to 3D
@@ -621,12 +627,19 @@ Return ONLY valid JSON:
                 end = len(lines) - 1 if lines[-1].strip() == "```" else len(lines)
                 json_str = "\n".join(lines[start:end])
 
-            self.scene_graph = json.loads(json_str)
+            parsed = json.loads(json_str)
+            if isinstance(parsed, list):
+                self.scene_graph = {"objects": parsed}
+            elif isinstance(parsed, dict):
+                self.scene_graph = parsed
+            else:
+                self.scene_graph = {"objects": []}
 
             # Merge reasoning results into Object3D instances
+            objects_list = self.scene_graph.get("objects", [])
             reasoning_map = {
-                obj["entity"]: obj
-                for obj in self.scene_graph.get("objects", [])
+                obj.get("entity", ""): obj
+                for obj in objects_list if isinstance(obj, dict)
             }
             for obj3d in self.objects_3d:
                 if obj3d.entity in reasoning_map:

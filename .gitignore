@@ -15,32 +15,30 @@ dist/
 build/
 .pytest_cache/
 
-# MASt3R (large repo + checkpoints)
-mast3r/checkpoints/*.pth
+# MASt3R (large subrepo + checkpoints)
 mast3r/
 
-# Pipeline outputs
-*.usda
-*_scene_graph.json
-*.rrd
-*.ply
-test_video.mp4
+# ---------------------------------------------------------------
+# Data directory (large / generated artifacts, keep structure only)
+# ---------------------------------------------------------------
+# Videos (large, not committed)
+data/inputs/*.mp4
+data/inputs/*.avi
+data/inputs/*.mov
+# Model weights (large, downloaded on first run)
+data/models/*.pt
+# All generated outputs
+data/outputs/*
+# But keep the directory structure markers
+!data/inputs/.gitkeep
+!data/outputs/.gitkeep
+!data/models/.gitkeep
 
-# Model artifacts
-*.pt
+# USD layered scene outputs
+scene/
 
-# Overnight test output
-overnight_output/
-
-# Demo output
-demo_output/
-demo_output_*/
-
-# Ground truth feedback
-ground_truth_feedback.json
-
-# Human review data
-*_human_review.json
+# Session layers (per-user, not tracked)
+**/layers/99_session.usda
 
 # IDE
 .vscode/
@@ -55,5 +53,6 @@ Thumbs.db
 w2d_keyframes_*/
 w2d_cache_*/
 
-# Other outputs
-*/*/outputs/
+# Testenvironment generated artifacts
+testenvironment/**/outputs/
+testenvironment/**/.venv/

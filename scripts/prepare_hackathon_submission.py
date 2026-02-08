@@ -33,8 +33,7 @@ EXCLUDE_DIR_NAMES = {
     ".pytest_cache",
     "__pycache__",
     "mast3r",
-    "overnight_output",
-    "demo_output",
+    "data",      # large inputs/outputs/models -- not committed
     "dist",
 }
 

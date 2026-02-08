@@ -1,6 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/world2data"]
+
 [project]
 name = "world2data"
-version = "0.2.0"
+version = "0.3.0"
 description = "World-to-USD pipeline: converts 2D video into 4D Dynamic Scene Graphs (OpenUSD) with multi-model AI"
 requires-python = ">=3.11"
 dependencies = [
@@ -63,6 +70,9 @@ all = [
 [project.scripts]
 world2data = "world2data.__main__:main"
 world2data-calibration = "world2data.calibration:main"
+world2data-demo = "world2data.pipeline.demo_run:main"
+world2data-generate-demo = "world2data.pipeline.generate_demo:main"
+world2data-review = "world2data.pipeline.human_review_ui:main"
 
 [dependency-groups]
 dev = [

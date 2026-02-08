@@ -24,16 +24,22 @@ Single-video to OpenUSD with temporal scene context, confidence-aware reasoning 
 
 ## 5. Implementation & Technology
 - Geometry: MASt3R multi-view reconstruction.
-- Semantics/Detection: YOLOv8 (+ optional SAM3 path when access is granted).
+- Semantics/Detection: YOLOv8 + SAM3 integration path + Gemini context.
 - Reasoning: Gemini-backed semantic/causal augmentation with graceful fallback.
 - Output/Interop: OpenUSD (`usd-core`) + Rerun + JSON scene graph.
 - Reliability: pytest suite with fast tests and overnight long-run mode.
+- Architecture path to production: OpenUSD layer-based composition protocol (`scene.usda` + role layers + overrides).
 
 ## 6. Results & Impact
 Recent run artifacts demonstrate:
-- ~737k reconstructed 3D points.
-- 20 temporal camera frames.
+- ~4.0M reconstructed 3D points.
+- 120 temporal frames spanning the full source clip.
 - Structured scene graph and USD export generated end-to-end.
 - Robust completion even under external API quota constraints (degraded mode).
 
-If we had 24 more hours: finalize full SAM3-gated path and ship stronger multi-object temporal persistence in the demo video.
+## 7. Known Pitfalls & Mitigation
+- Pitfall: stale `.rrd` files can cause old timeline playback; mitigation is explicit artifact refresh before demo.
+- Pitfall: monolithic USD output limits collaborative merges; mitigation is layered OpenUSD protocol with deterministic sublayer order.
+- Pitfall: model-context caps in reasoning paths can hide late-scene details; mitigation is explicit full-span checks and protocolized provenance.
+
+If we had 24 more hours: enforce namespace/provenance CI checks and complete strict per-component USD layer authoring.

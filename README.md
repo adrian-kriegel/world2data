@@ -2,6 +2,12 @@
 
 # world2data
 
+## Current Implementation Plan
+
+For the presentation-ready, code-accurate plan of what is implemented now, see:
+
+- [WORLD2DATA_REVISED_PLAN.md](WORLD2DATA_REVISED_PLAN.md)
+
 Generate ground truth data from videos. 
 
 Creates a 3D map of containing 
@@ -109,14 +115,14 @@ For ChArUco videos, calibrate intrinsics + distortion and export JSON + USDA cam
 
 ```bash
 world2data-calibration \
-  --video res/camera_calibration.mp4 \
+  --video data/inputs/camera_calibration.mp4 \
   --board-squares-x 11 \
   --board-squares-y 8 \
   --square-mm 15 \
   --marker-mm 11 \
   --dictionary DICT_4X4_50 \
-  --output-json outputs/camera_calibration.json \
-  --output-usda outputs/camera_calibration.usda
+  --output-json data/outputs/camera_calibration.json \
+  --output-usda data/outputs/camera_calibration.usda
 ```
 
 The USDA layer is protocol-aligned:
@@ -181,7 +187,7 @@ uv sync
 echo "GOOGLE_API_KEY=your_key_here" > .env
 
 # 3. Run on a video (multi-model v2 pipeline)
-uv run python pipeline_controller.py your_video.mp4 --output scene.usda
+uv run world2data-demo --video data/inputs/your_video.mp4
 
 # 4. View the interactive 3D recording
 uv run rerun scene.rrd
@@ -298,20 +304,20 @@ The `.usda` file can be opened in:
 ## Running Tests
 
 ```bash
-# Fast tests (mock geometry, no GPU, ~15s)
-uv run python -m pytest test_pipeline.py -v
+# All fast tests (~15s)
+uv run python -m pytest tests/ -v
 
 # Excluding API-dependent tests
-uv run python -m pytest test_pipeline.py -v -k "not gemini"
+uv run python -m pytest tests/ -v -k "not gemini"
 
 # OVERNIGHT: Full pipeline on real video with MASt3R + Gemini (~3-5 min)
-uv run python -m pytest test_pipeline.py -v --overnight
+uv run python -m pytest tests/ -v --overnight
 
 # Overnight test only
-uv run python -m pytest test_pipeline.py -v --overnight -k overnight
+uv run python -m pytest tests/ -v --overnight -k overnight
 ```
 
-The overnight test saves outputs to `overnight_output/` for manual inspection.
+The overnight test saves outputs to `data/outputs/overnight_output/` for manual inspection.
 
 ## Overnight Test Results
 
@@ -319,29 +325,29 @@ To view the overnight test output:
 
 ```bash
 # View interactive 3D recording
-uv run rerun overnight_output/overnight.rrd
+uv run rerun data/outputs/overnight_output/overnight.rrd
 
 # View pipeline summary
-uv run python generate_demo.py --json overnight_output/overnight_scene_graph.json
+uv run python -m world2data.pipeline.generate_demo --json data/outputs/overnight_output/overnight_scene_graph.json
 
 # View point cloud externally
-# Open overnight_output/overnight.ply in MeshLab or CloudCompare
+# Open data/outputs/overnight_output/overnight.ply in MeshLab or CloudCompare
 
 # View USD in Omniverse
-# Open overnight_output/overnight.usda
+# Open data/outputs/overnight_output/overnight.usda
 ```
 
 ## Demo Generator
 
 ```bash
 # Show summary of pipeline outputs
-uv run python generate_demo.py --json real_scene_scene_graph.json
+uv run python -m world2data.pipeline.generate_demo --json real_scene_scene_graph.json
 
 # Run pipeline and generate demo from video
-uv run python generate_demo.py --video your_video.mp4 --output demo
+uv run python -m world2data.pipeline.generate_demo --video data/inputs/your_video.mp4 --output demo
 
 # Open in Rerun viewer
-uv run python generate_demo.py --json real_scene_scene_graph.json --open
+uv run python -m world2data.pipeline.generate_demo --json real_scene_scene_graph.json --open
 ```
 
 ## Core Stack
@@ -375,7 +381,7 @@ Cost: ~$0.075/min of video. Total per run: ~$1-5.
 
 1. Run the pipeline on your video:
    ```bash
-   uv run python pipeline_controller.py your_video.mp4 --output demo.usda
+   uv run world2data-demo --video data/inputs/your_video.mp4
    ```
 
 2. Open the recording in Rerun:
@@ -416,22 +422,70 @@ Cost: ~$0.075/min of video. Total per run: ~$1-5.
 
 ```
 world2data/
-  pipeline_controller.py   -- Main pipeline (The "Ralph Loop" v2)
-  model_interfaces.py       -- Clean interfaces: YOLO, SAM3, Gemini, Reasoning
-  scene_fusion.py           -- 4D fusion, confidence, human-loop, evaluator
-  test_pipeline.py          -- Test suite (29 fast + 1 overnight)
-  conftest.py              -- Pytest config for --overnight marker
-  generate_test_video.py   -- Synthetic test video generator
-  generate_demo.py         -- Demo summary + viewer launcher
-  visualize_impact.py      -- Pitch visualization (demo + live modes)
-  pyproject.toml           -- Dependencies (uv)
-  IMPLEMENTATION_PLAN.md   -- Full architecture plan
-  AGENT_PROMPT.md          -- Implementation instructions for agents
-  World2Data.txt           -- Original project vision
-  .env                     -- API keys (not committed)
-  .gitignore               -- Excludes secrets, outputs, mast3r/
-  mast3r/                  -- MASt3R clone (not committed)
+  src/world2data/               -- Python package (src layout)
+    __init__.py                 -- Core exports: particle filter, vision, calibration
+    __main__.py                 -- CLI entry point (uv run world2data)
+    model.py                    -- Data model (AABB2D, Detection2D, CameraPose, etc.)
+    particle_filter.py          -- Multi-object particle filter (production)
+    vision.py                   -- 3D projection / back-projection helpers
+    calibration.py              -- ChArUco camera calibration
+    openusd.py                  -- USD export for particle-filter estimates
+    usd_layers.py               -- OpenUSD Layering Protocol (multi-layer composition)
+    pipeline/
+      __init__.py               -- Pipeline exports
+      controller.py             -- World2DataPipeline (The "Ralph Loop" v2)
+      model_interfaces.py       -- Clean interfaces: YOLO, SAM3, Gemini, Reasoning
+      scene_fusion.py           -- 4D fusion, confidence, human-loop, evaluator
+      demo_run.py               -- Full demo runner for investor presentations
+      generate_demo.py          -- Presentation-ready demo generator
+      human_review_ui.py        -- Human-in-the-loop review UI (Gradio)
+      visualize_impact.py       -- Rerun pitch visualization
+  data/
+    inputs/                     -- Video files for pipeline input (gitignored .mp4s)
+    models/                     -- YOLO weights etc. (auto-downloaded, gitignored)
+    outputs/                    -- All generated pipeline artifacts (gitignored)
+  tests/
+    generate_test_video.py      -- Synthetic test video generator
+    test_calibration.py         -- Camera calibration tests
+    test_openusd_compat.py      -- USD export tests
+    test_particle_filter.py     -- Multi-object particle filter tests
+    test_pipeline.py            -- Pipeline tests (29 fast + 1 overnight)
+    test_demo_components.py     -- Demo component tests (YOLO, fusion, etc.)
+    test_usd_layers.py          -- OpenUSD Layering Protocol tests (12 tests)
+  scripts/
+    check_sam3_hf_access.py     -- Verify Hugging Face SAM3 access
+    prepare_hackathon_submission.py -- Build submission archive
+  submission/                   -- Hackathon submission materials
+  testenvironment/              -- LFM2.5-VL model experiments (standalone)
+  mast3r/                       -- MASt3R clone (not committed)
+  conftest.py                   -- Pytest config for --overnight marker
+  pyproject.toml                -- Dependencies (uv + hatchling)
+  W2D_OpenUSD_Layering_Protocol.md -- OpenUSD multi-layer spec
+  .env                          -- API keys (not committed)
 ```
+
+### OpenUSD Layered Output Structure
+
+The pipeline now produces a **multi-layer composed USD scene** following the W2D protocol:
+
+```
+scene/
+  scene.usda                      # Assembly entrypoint (open this file)
+  layers/
+    00_base.usda                  # Conventions + namespace skeleton
+    10_inputs_run_<RUNID>.usda    # Input refs (video, point cloud)
+    20_recon_run_<RUNID>.usda     # Cameras + reconstruction
+    30_tracks_run_<RUNID>.usda    # Entity tracks + bounding boxes
+    40_events_run_<RUNID>.usda    # Events/relations graph
+    90_overrides.usda             # Human QA corrections (strong layer)
+    99_session.usda               # Per-user local edits (gitignored)
+  external/
+    inputs/                       # Video files
+    recon/                        # Point cloud caches (.ply)
+```
+
+**Key principles:** No physical merging (composition only), namespace ownership,
+provenance on every prim, deterministic layer ordering.
 
 ## Resources
 
@@ -441,30 +495,3 @@ world2data/
 - https://rerun.io/
 - https://openusd.org/
 - https://ai.google.dev/ (Gemini API)
-## Camera calibration (quick app)
-
-For ChArUco videos, calibrate intrinsics + distortion and export JSON + USDA camera prim:
-
-```bash
-world2data-calibration \
-  --video res/camera_calibration.mp4 \
-  --board-squares-x 11 \
-  --board-squares-y 8 \
-  --square-mm 15 \
-  --marker-mm 11 \
-  --dictionary DICT_4X4_50 \
-  --output-json outputs/camera_calibration.json \
-  --output-usda outputs/camera_calibration.usda
-```
-
-The USDA layer is protocol-aligned:
-- Camera prim path: `/World/W2D/Sensors/CalibrationCamera`
-- No authored camera pose/extrinsics (intrinsics only)
-- Custom attrs:
-  - `w2d:intrinsicMatrix`
-  - `w2d:distortionModel`
-  - `w2d:distortionCoeffs`
-  - `w2d:imageWidth`
-  - `w2d:imageHeight`
-  - `w2d:producedByRunId`
-- Provenance record at `/World/W2D/Provenance/runs/<RUNID>`

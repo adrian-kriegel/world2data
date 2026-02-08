@@ -4,22 +4,28 @@
 Show real-world impact and visible functionality.
 
 ## Timeline
-0-06s: "World2Data converts a normal video into a simulation-ready 3D scene."
+0-07s: Hook
+- "World2Data turns a single phone video into a simulation-ready 3D world model."
 
-06-18s: Show raw input video clip (real room / environment).
+07-16s: Input + run
+- Show raw input clip and command trigger.
+- Overlay: "33s source video, processed end-to-end."
 
-18-35s: Show Rerun timeline playback:
+16-34s: Rerun playback (key proof)
 - evolving point cloud
 - camera trajectory
 - object overlays/state labels
+- scrub from first to last frame to prove full-span processing
 
-35-48s: Show generated artifacts quickly:
+34-48s: Artifact handoff
 - `.usda`
 - `_scene_graph.json`
+- `.rrd`
 - `.ply`
 
-48-60s: Close with impact:
-"This removes hours of manual scene setup and enables faster robotics/simulation iteration from everyday video."
+48-60s: Close with value + honesty
+- "We already generate interoperable 3D assets and temporal traces from plain video."
+- "Next hardening step is strict OpenUSD layer composition and QA override workflows."
 
 ## Recording Checklist
 - Record 1080p, 30fps.

@@ -10,21 +10,23 @@ Explain architecture and implementation depth.
 - Gemini reasoning
 - OpenUSD + Rerun outputs
 
-10-25s: Explain pipeline flow:
+10-24s: Explain pipeline flow:
 video -> keyframes -> 3D reconstruction -> semantic/state fusion -> USD export
 
-25-40s: Show concrete implementation highlights:
+24-40s: Show concrete implementation highlights:
 - deterministic output controls (seeded sampling)
 - robust fallback logic for missing APIs
 - particle filter integration for semantic temporal consistency
+- explicit full-timeline check (start/end frame span shown in logs)
 
-40-52s: Show test/validation:
+40-53s: Show test/validation:
 - pytest pass snapshot
-- generated scene graph metrics
+- generated scene graph metrics (frames, points, objects)
+- call out current limits: reasoning path uses sampled keyframes, SAM3 prompt cap
 
-52-60s: Limitations and next step:
-- SAM3 access is gated and must be approved
-- next: stronger full-frame tracking in fusion path
+53-60s: Protocol-aware next step:
+- migrate from single output USD to layered composition (`scene.usda` + role layers)
+- enforce namespace ownership + provenance per producer run
 
 ## Recording Checklist
 - Keep one architecture diagram on-screen while speaking.

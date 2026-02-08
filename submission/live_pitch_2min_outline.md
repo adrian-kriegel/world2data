@@ -14,9 +14,9 @@
 - Show one architecture diagram + one screenshot from Rerun.
 
 ## Slide 3: Results + Impact (30s)
-- Example run: ~737k points, 20 temporal frames, USD + scene graph artifacts.
+- Example run: ~4.0M points, 120 temporal frames, USD + scene graph + Rerun artifacts.
 - Immediate value: faster simulation setup and repeatable scene understanding from simple video.
-- Ask: "With more time, we harden SAM3 gated path + full temporal multi-object persistence."
+- Ask: "With more time, we move to strict layered OpenUSD composition + CI namespace/provenance validation."
 
 ## Demo Insert (within 2 min)
 - 20-30s clip from your 60s demo video showing input -> 3D output.

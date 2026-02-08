@@ -1,0 +1,39 @@
+# Environment & secrets
+.env
+.env.
+
+# Virtual environments
+.venv/
+.venv-world2data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# MASt3R checkpoints (large files)
+mast3r/checkpoints/*.pth
+
+# Pipeline outputs
+output.usda
+*_scene_graph.json
+test_video.mp4
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temp
+*.tmp
+w2d_keyframes_*/
+w2d_cache_*/
+
+# Outputs
+*/*/outputs/  

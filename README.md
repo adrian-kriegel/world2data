@@ -1,74 +1,123 @@
-# world2data
+# World2Data
 
-Generate ground truth data from videos. 
+Generate ground truth data from videos.
 
-Creates a 3D map of containing 
+Creates a 3D Dynamic Scene Graph from 2D video containing:
+- **3D point clouds** that evolve through time (per-frame reconstruction)
+- **Object detection** with labels (door, table, chair, cup, ...)
+- **State changes** (door opened, cup vanished, ...)
+- **Physics hints** (RevoluteJoint, FixedJoint, PrismaticJoint)
+- **Causal reasoning** about unexplainable events
 
-- coordinates with item labels
-- action hints like "graspable" for "doorhandle"
-- state changes like "door opened" "cup vanished" 
+## Quick Start
 
-Reflects on improbable state changes that cannot be explained by an items motion model:
+```bash
+# 1. Install dependencies (uv required)
+uv sync
 
-"Door opened" -> OK
-"Cup vanished" -> a reasoning model is asked to understand why -> "the person who just drank from the cup was seen leaving the room" 
-"
+# 2. Set your API key in .env
+echo "GOOGLE_API_KEY=your_key_here" > .env
 
-## Interfaces 
+# 3. Run on a video
+uv run python pipeline_controller.py your_video.mp4 --output scene.usda
+```
 
-- Camera motion from video
-- Object detection (bounding boxes or even segmention) 
-- Depth estimation from video 
-- Cost function for particles 
-    - This can include the output from the depth estimation, camera from motion, object detection 
-    - Should be agnostic to what exactly the interfaces give. e.g. object detection gives bounding boxes or segmentation - works with both 
-- Motion model for each object: Maps current particle position in state space to new position + spread. The motion model may change based on the context: 
-    - An object in someones hand is expected to move 
-    - Objects on the table are not expected to move (they move with the table top)
+## Pipeline Steps (The "Ralph Loop")
 
-- State change feedback
-    - If a motion happens that is not explained adequatly by the model (things vanish, things that are not supposed to move, move), this information is fed into a reasoning model which can explain why 
-    - The output from the reasoning model is used to adjust the motion model
+| Step | Model | What it does |
+|------|-------|-------------|
+| 1. Keyframe Extraction | L1 pixel diff | Selects informative frames from video |
+| 2. Geometry | **MASt3R** | Metric 3D reconstruction with per-frame point clouds |
+| 3. Semantics | SAM 3 (stub) | Object segmentation projected to 3D |
+| 4. Reasoning | **Gemini** | Identifies objects, state changes, and causality |
+| 5. Export | **OpenUSD** + Rerun | `.usda` scene + interactive `.rrd` recording |
 
-All tied together with a particle filter:
+Each step self-verifies and retries with different parameters on failure.
 
-Each *new* object detection spawns a new particle. Motion model and particle evolution is applied, then particles are sampled using cost function. 
+## Viewing the Interactive 3D Timeline
 
-## Idea
+The pipeline generates a **Rerun `.rrd` recording** with temporal 3D data.
+This lets you scrub through the video timeline and see the point cloud evolve.
 
+### Open in Rerun Viewer
 
-LFM2.5‑VL generates scene description (structured)
-    - what objects this scene contains 
-    - relationships "person drinks from mug" 
+```bash
+# Install the Rerun viewer (first time only)
+uv run pip install rerun-sdk
 
-SLAM first to get camera motion from images and set a coordinate frame
-Use Yolo + 3D estimation to find objects 
-map them to 3D world (SLAM) coordinates 
-find the objects mentioned by LFM before 
+# Open the recording
+uv run rerun scene.rrd
+```
 
-track each item using a particle filter 
-LFM suggests a motion model for each particle 
+### What you see in the viewer
 
-Correlate the things found by Yolo with the object descriptions. 
+- **world/current_view** -- Point cloud from the current camera (changes per frame)
+- **world/accumulated** -- All points seen up to this moment (grows over time)
+- **world/camera** -- Camera frustum showing where the camera is looking
+- **world/camera/image** -- The 2D keyframe image from that viewpoint
+- **world/trajectory** -- Yellow line showing the camera path through space
 
-The output should be
-    - list of items that exist in the entire video and where in 3D space (initial condition)
-    - list of actions that happen e.g.
-        - "door opens at time t" (e.g. from LFM)
-        - "cup vanishes at time t" (should be there according to PF but isn't found)
-        - "person leaves room at time t" (e.g. from LFM)
+Use the **timeline scrubber** at the bottom of the Rerun viewer to play through
+the reconstruction. You can drag it, play/pause, or step frame-by-frame.
 
-We now have a graph and can look up items which are associated with unexplainable things, like the cup vanishing. The cup node is linked to the person node, we can collect all the cups actions and persons actions from the graph and get 
+### Keyboard shortcuts in Rerun
 
+- `Space` -- Play/Pause
+- `Left/Right` -- Step one frame
+- `Shift+Left/Right` -- Jump 10 frames
+- Mouse drag in 3D view -- Rotate camera
+- Scroll -- Zoom
 
-"cup seen first at x,y,z" 
-"person drinks from cup at time t" 
-"person leaves the room"
-"cup expected at x,y,z but not found" 
+## Output Files
 
+| File | Description |
+|------|-------------|
+| `*.usda` | OpenUSD scene with point cloud, cameras, detected objects |
+| `*_scene_graph.json` | Object graph from Gemini + camera metadata |
+| `*.rrd` | Interactive Rerun recording (temporal 3D) |
 
-## Resources 
+## Running Tests
 
-https://arxiv.org/html/2602.04517v1
-https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B?utm_source=chatgpt.com
-https://rerun.io/
+```bash
+# All tests (includes real MASt3R + Gemini if available)
+uv run python -m pytest test_pipeline.py -v
+
+# Fast tests only (mock geometry, no GPU)
+uv run python -m pytest test_pipeline.py -v -k "not real_mast3r and not real_video"
+```
+
+## Core Stack
+
+1. **MASt3R** (Naver) -- SOTA multi-view stereo reconstruction
+2. **Gemini** (Google) -- Multimodal reasoning for object state analysis
+3. **SAM 3** (Meta) -- Segment Anything (stub, waiting for public release)
+4. **OpenUSD** (Pixar) -- Industry-standard 3D scene format
+5. **Rerun.io** -- Interactive temporal 3D visualization
+
+## Architecture
+
+```
+Video --> [Keyframe Extraction] --> [MASt3R 3D] --> [SAM 3 Semantics] --> [Gemini Reasoning]
+                                         |                  |                     |
+                                   per-frame 3D        object masks         state changes
+                                   point clouds        in 3D space          + causality
+                                         |                  |                     |
+                                         +------------------+---------------------+
+                                                            |
+                                                    [OpenUSD Export]
+                                                    [Rerun .rrd Recording]
+```
+
+## Interfaces
+
+- Camera motion from video (MASt3R camera poses)
+- Object detection (Gemini + future SAM 3)
+- Depth estimation from video (MASt3R dense depth maps)
+- State change detection (Gemini causal reasoning)
+- Motion models per object (planned: particle filter)
+
+## Resources
+
+- https://github.com/naver/mast3r
+- https://rerun.io/
+- https://openusd.org/

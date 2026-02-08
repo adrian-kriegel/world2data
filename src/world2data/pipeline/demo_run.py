@@ -253,10 +253,33 @@ def _print_summary(pipeline, output_dir, elapsed):
             size_mb = os.path.getsize(fpath) / 1e6
             print(f"    {fname:40s} ({size_mb:.2f} MB)")
 
+    # Check for layered scene
+    scene_dir = os.path.join(output_dir, "scene")
+    if os.path.isdir(scene_dir):
+        scene_usda = os.path.join(scene_dir, "scene.usda")
+        print(f"\n  LAYERED USD SCENE: {scene_usda}")
+        layers_dir = os.path.join(scene_dir, "layers")
+        if os.path.isdir(layers_dir):
+            for lf in sorted(os.listdir(layers_dir)):
+                print(f"    {lf}")
+        ext_recon = os.path.join(scene_dir, "external", "recon")
+        if os.path.isdir(ext_recon):
+            ply_count = len([f for f in os.listdir(ext_recon) if f.endswith(".ply")])
+            pq_count = len([f for f in os.listdir(ext_recon) if f.endswith(".parquet")])
+            print(f"    external/recon/: {ply_count} PLY files, {pq_count} parquet files")
+
     print("\n  VIEW COMMANDS:")
-    print(f"    uv run rerun {os.path.join(output_dir, 'demo_scene.rrd')}")
-    print(f"    uv run python demo_run.py --usdview")
-    print(f"    uv run python demo_run.py --review")
+    rrd_path = os.path.join(output_dir, "demo_scene.rrd")
+    if not os.path.isfile(rrd_path):
+        # Try alternative naming
+        for f in os.listdir(output_dir):
+            if f.endswith(".rrd"):
+                rrd_path = os.path.join(output_dir, f)
+                break
+    print(f"    uv run rerun {rrd_path}")
+    if os.path.isdir(scene_dir):
+        print(f"    usdview {os.path.join(scene_dir, 'scene.usda')}")
+    print(f"    uv run world2data-demo --review")
     print("=" * 70)
 
 

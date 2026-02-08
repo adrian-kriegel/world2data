@@ -11,7 +11,7 @@ The expert can:
   - Mark objects as verified
   - Add notes
   - Flag false positives for removal
-  - Save corrections back to the review JSON
+  - Save corrections back to the review JSON AND to 90_overrides.usda
 
 Usage:
     uv run world2data-review --json data/outputs/demo_output/demo_human_review.json
@@ -23,8 +23,6 @@ import json
 import argparse
 import time
 from pathlib import Path
-
-# No sys.path manipulation needed -- installed via src layout
 
 
 def load_review_data(json_path: str) -> dict:
@@ -40,6 +38,71 @@ def save_review_data(data: dict, json_path: str):
         json.dump(data, f, indent=2, default=str)
 
 
+def _write_overrides_usda(objects: list[dict], output_dir: str):
+    """Write a 90_overrides.usda file from human corrections.
+
+    This connects the review UI to the OpenUSD layering protocol.
+    Only objects with actual human changes are written as overrides.
+    """
+    try:
+        from world2data.usd_layers import USDLayerWriter, OverrideRecord
+    except ImportError:
+        return None
+
+    scene_dir = os.path.join(output_dir, "scene")
+    if not os.path.isdir(scene_dir):
+        # No layered scene exists, skip
+        return None
+
+    overrides = []
+    for obj in objects:
+        if not obj.get("human_verified") and not obj.get("human_label") and not obj.get("false_positive"):
+            continue  # No human edits on this object
+
+        entity_safe = obj.get("entity", "unknown").replace(" ", "_").replace("/", "_")
+        prim_path = f"/World/W2D/Entities/Objects/{entity_safe}"
+
+        if obj.get("human_label"):
+            overrides.append(OverrideRecord(
+                target_prim_path=prim_path,
+                property_name="w2d:label",
+                new_value=obj["human_label"],
+                reason=obj.get("human_notes", "Human correction"),
+                approved_by="human_reviewer",
+            ))
+        if obj.get("human_type") and obj["human_type"] != "(keep current)":
+            overrides.append(OverrideRecord(
+                target_prim_path=prim_path,
+                property_name="w2d:class",
+                new_value=obj["human_type"],
+                reason=obj.get("human_notes", "Human correction"),
+                approved_by="human_reviewer",
+            ))
+        if obj.get("false_positive"):
+            overrides.append(OverrideRecord(
+                target_prim_path=prim_path,
+                property_name="w2d:falsePositive",
+                new_value=True,
+                reason=obj.get("human_notes", "Flagged as false positive"),
+                approved_by="human_reviewer",
+            ))
+        if obj.get("human_verified"):
+            overrides.append(OverrideRecord(
+                target_prim_path=prim_path,
+                property_name="w2d:humanVerified",
+                new_value=True,
+                reason="Human verified",
+                approved_by="human_reviewer",
+            ))
+
+    if not overrides:
+        return None
+
+    writer = USDLayerWriter(scene_dir)
+    override_path = writer.write_overrides_layer(overrides)
+    return str(override_path)
+
+
 def build_ui(json_path: str, port: int = 7860):
     """Build and launch the Gradio review interface."""
     try:
@@ -53,9 +116,16 @@ def build_ui(json_path: str, port: int = 7860):
     interactions = review_data.get("interactions", [])
     narrative = review_data.get("scene_narrative", "")
 
+    # Determine output dir (for writing overrides USDA)
+    output_dir = str(Path(json_path).parent)
+
     # =====================================================================
     # Build the Gradio app
     # =====================================================================
+
+    # We collect component references to read values on save
+    component_refs = []  # list of (obj_index, label, type, joint, verified, fp, notes)
+
     with gr.Blocks(
         title="World2Data - Human Review",
         theme=gr.themes.Soft(),
@@ -75,9 +145,9 @@ def build_ui(json_path: str, port: int = 7860):
             with gr.Accordion("Scene Narrative (from Gemini Video Analysis)", open=False):
                 gr.Markdown(narrative)
 
-        # =====================================================================
+        # =================================================================
         # Objects tab
-        # =====================================================================
+        # =================================================================
         with gr.Tab("Objects"):
             gr.Markdown("### Review Detected Objects")
             gr.Markdown(
@@ -110,10 +180,9 @@ def build_ui(json_path: str, port: int = 7860):
             )
 
             # Per-object review cards
-            for obj in objects:
+            for idx, obj in enumerate(objects):
                 needs_review = obj.get("needs_review", False)
                 confidence = obj.get("confidence", 0)
-                color = "red" if needs_review else ("green" if confidence > 0.7 else "orange")
 
                 with gr.Accordion(
                     f"{'[!] ' if needs_review else ''}"
@@ -137,13 +206,10 @@ def build_ui(json_path: str, port: int = 7860):
                                 f"{[round(x, 2) for x in obj.get('size_3d', [0,0,0])]}"
                             )
                         with gr.Column(scale=2):
-                            obj_id = obj.get("id", 0)
-
                             human_label = gr.Textbox(
                                 label="Correct Label (leave empty if correct)",
                                 value=obj.get("human_label") or "",
                                 placeholder="e.g., 'Coffee Table' if 'table' is too vague",
-                                elem_id=f"label_{obj_id}",
                             )
                             human_type = gr.Dropdown(
                                 label="Correct Type",
@@ -153,7 +219,6 @@ def build_ui(json_path: str, port: int = 7860):
                                          "phone", "book", "lamp", "sofa",
                                          "bed", "sink", "toilet", "other"],
                                 value="(keep current)",
-                                elem_id=f"type_{obj_id}",
                             )
                             human_joint = gr.Dropdown(
                                 label="Correct Joint Type",
@@ -161,31 +226,29 @@ def build_ui(json_path: str, port: int = 7860):
                                          "RevoluteJoint", "PrismaticJoint",
                                          "SphericalJoint", "FreeJoint"],
                                 value="(keep current)",
-                                elem_id=f"joint_{obj_id}",
                             )
                             human_verified = gr.Checkbox(
                                 label="Mark as Verified",
                                 value=obj.get("human_verified", False),
-                                elem_id=f"verified_{obj_id}",
                             )
                             false_positive = gr.Checkbox(
                                 label="Flag as False Positive (remove)",
                                 value=False,
-                                elem_id=f"fp_{obj_id}",
                             )
                             human_notes = gr.Textbox(
                                 label="Notes",
                                 value=obj.get("human_notes", ""),
                                 placeholder="Any observations...",
-                                elem_id=f"notes_{obj_id}",
                             )
 
-            # State for tracking changes
-            changes_state = gr.State({})
+                            component_refs.append(
+                                (idx, human_label, human_type, human_joint,
+                                 human_verified, false_positive, human_notes)
+                            )
 
-        # =====================================================================
+        # =================================================================
         # Interactions tab
-        # =====================================================================
+        # =================================================================
         with gr.Tab("Interactions"):
             gr.Markdown("### State Changes & Interactions")
 
@@ -209,9 +272,9 @@ def build_ui(json_path: str, port: int = 7860):
             else:
                 gr.Markdown("*No interactions detected.*")
 
-        # =====================================================================
+        # =================================================================
         # Evaluation tab
-        # =====================================================================
+        # =================================================================
         with gr.Tab("Quality Metrics"):
             gr.Markdown("### Pipeline Quality Evaluation")
 
@@ -236,9 +299,9 @@ def build_ui(json_path: str, port: int = 7860):
                 f"| Interactions | {len(interactions)} |\n"
             )
 
-        # =====================================================================
+        # =================================================================
         # USD Viewer tab
-        # =====================================================================
+        # =================================================================
         with gr.Tab("USD Scene"):
             gr.Markdown("### OpenUSD Scene Hierarchy")
             gr.Markdown(
@@ -246,7 +309,7 @@ def build_ui(json_path: str, port: int = 7860):
                 "physics metadata, and accuracy scores.\n\n"
                 "To view interactively:\n"
                 "```bash\n"
-                "usdview demo_output/demo_scene.usda\n"
+                "usdview demo_output/scene/scene.usda\n"
                 "```\n"
                 "Or open in NVIDIA Omniverse."
             )
@@ -281,21 +344,75 @@ def build_ui(json_path: str, port: int = 7860):
                     language=None,
                 )
 
-        # =====================================================================
+        # =================================================================
         # Save button
-        # =====================================================================
-        save_btn = gr.Button("Save All Changes", variant="primary", size="lg")
+        # =================================================================
+        save_btn = gr.Button(
+            "Save All Changes (JSON + USD Overrides)",
+            variant="primary", size="lg",
+        )
         save_status = gr.Markdown("")
 
-        def save_changes():
-            """Save is a placeholder -- in production this would read all
-            component values and update the JSON. For the prototype,
-            we just acknowledge the save."""
-            save_review_data(review_data, json_path)
-            return (f"Changes saved to `{json_path}` at "
-                    f"{time.strftime('%H:%M:%S')}")
+        # Build the list of all input components for the save handler
+        all_inputs = []
+        for (idx, label, typ, joint, verified, fp, notes) in component_refs:
+            all_inputs.extend([label, typ, joint, verified, fp, notes])
 
-        save_btn.click(fn=save_changes, outputs=save_status)
+        def save_changes(*values):
+            """Read all component values and update the review JSON + USD overrides."""
+            n_components_per_obj = 6  # label, type, joint, verified, fp, notes
+            changes_count = 0
+
+            for i, (obj_idx, *_) in enumerate(component_refs):
+                offset = i * n_components_per_obj
+                label_val = values[offset]
+                type_val = values[offset + 1]
+                joint_val = values[offset + 2]
+                verified_val = values[offset + 3]
+                fp_val = values[offset + 4]
+                notes_val = values[offset + 5]
+
+                obj = objects[obj_idx]
+                changed = False
+
+                if label_val and label_val.strip():
+                    obj["human_label"] = label_val.strip()
+                    changed = True
+                if type_val and type_val != "(keep current)":
+                    obj["human_type"] = type_val
+                    changed = True
+                if joint_val and joint_val != "(keep current)":
+                    obj["human_joint"] = joint_val
+                    changed = True
+                if verified_val:
+                    obj["human_verified"] = True
+                    changed = True
+                if fp_val:
+                    obj["false_positive"] = True
+                    changed = True
+                if notes_val and notes_val.strip():
+                    obj["human_notes"] = notes_val.strip()
+                    changed = True
+
+                if changed:
+                    changes_count += 1
+
+            # Save updated JSON
+            review_data["objects"] = objects
+            save_review_data(review_data, json_path)
+
+            # Write 90_overrides.usda if layered scene exists
+            override_path = _write_overrides_usda(objects, output_dir)
+            override_msg = ""
+            if override_path:
+                override_msg = f"  \nUSD overrides written to `{override_path}`"
+
+            return (
+                f"Saved {changes_count} changes to `{json_path}` "
+                f"at {time.strftime('%H:%M:%S')}.{override_msg}"
+            )
+
+        save_btn.click(fn=save_changes, inputs=all_inputs, outputs=save_status)
 
     # Launch
     print(f"\nLaunching World2Data Review UI on http://localhost:{port}")

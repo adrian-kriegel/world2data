@@ -138,6 +138,28 @@ except ImportError as e:
     print(f"WARNING: scene_fusion not available ({e}).")
 
 # ---------------------------------------------------------------------------
+# Multi-Object Particle Filter (production-grade 3D tracking)
+# ---------------------------------------------------------------------------
+_HAS_PARTICLE_FILTER = False
+try:
+    from world2data.model import (
+        AABB2D as PF_AABB2D,
+        CameraIntrinsics as PF_CameraIntrinsics,
+        CameraPose as PF_CameraPose,
+        Detection2D as PF_Detection2D,
+        FrameContext as PF_FrameContext,
+    )
+    from world2data.particle_filter import (
+        MultiObjectParticleFilter,
+        ParticleFilterConfig,
+        ConstantVelocityMotionModel,
+        BackProjectionIoUCost,
+    )
+    _HAS_PARTICLE_FILTER = True
+except ImportError as e:
+    print(f"WARNING: particle_filter not available ({e}).")
+
+# ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 MAST3R_CHECKPOINT = os.path.join(
@@ -356,6 +378,14 @@ class World2DataPipeline:
         self.objects_4d = []          # list[SceneObject4D] from fusion
         self.evaluation = {}          # GroundTruthEvaluator output
 
+        # Multi-Object Particle Filter tracking
+        self._pf_tracker = None           # MultiObjectParticleFilter instance
+        self.pf_track_history = []        # list[FilterResult] per frame
+        self.pf_track_estimates = {}      # track_id -> list[(frame_idx, TrackEstimate)]
+
+        # Layered USD output
+        self._layered_scene_path = None
+
         # Rerun
         self.rerun_enabled = rerun_enabled
         if rerun_enabled:
@@ -449,6 +479,10 @@ class World2DataPipeline:
                 # STEP 3a: YOLOv8 Detection (fast, all keyframes)
                 self.step_3a_yolo_detection()
 
+                # STEP 3d: Particle Filter 3D Tracking (YOLO + MASt3R -> 3D tracks)
+                # Runs BEFORE Gemini/reasoning so downstream has 3D reference data
+                self.step_3d_particle_filter_tracking()
+
                 # STEP 3b: SAM3 Video Segmentation (pixel-perfect + tracking)
                 self.step_3b_sam3_segmentation()
 
@@ -464,6 +498,12 @@ class World2DataPipeline:
 
             # STEP 5: OPENUSD EXPORT (with physics + confidence + human flags)
             self.step_5_export_usd()
+
+            # STEP 5b: LAYERED OPENUSD (protocol-compliant scene bundle)
+            try:
+                self.step_5b_export_layered_usd()
+            except Exception as e:
+                print(f"  WARN: Layered USD export failed (non-fatal): {e}")
 
             # STEP 6: TEMPORAL RERUN RECORDING
             if self.rerun_enabled:
@@ -1092,6 +1132,145 @@ class World2DataPipeline:
         print(f"  Classes: {', '.join(f'{k}({v})' for k, v in list(freq.items())[:10])}")
 
     # =====================================================================
+    # STEP 3d: MULTI-OBJECT PARTICLE FILTER (3D tracking from YOLO + MASt3R)
+    # =====================================================================
+    def step_3d_particle_filter_tracking(self):
+        """Run MultiObjectParticleFilter over all frames to produce 3D track estimates.
+
+        Uses YOLO 2D detections + MASt3R camera poses/intrinsics to track objects
+        through 3D space over time. This step MUST run after YOLO and MASt3R,
+        and BEFORE Gemini reasoning, so that downstream stages have 3D reference
+        tracks to anchor their analysis.
+
+        Produces:
+          - self.pf_track_history: FilterResult per frame
+          - self.pf_track_estimates: {track_id: [(frame_idx, TrackEstimate), ...]}
+        """
+        if not _HAS_PARTICLE_FILTER:
+            print("--- Step 3d: SKIP (particle_filter not available) ---")
+            return
+        if not self.frame_data:
+            print("--- Step 3d: SKIP (no frame data) ---")
+            return
+        if not self.yolo_detections:
+            print("--- Step 3d: SKIP (no YOLO detections) ---")
+            return
+
+        print("--- Step 3d: Multi-Object Particle Filter Tracking ---")
+        import random as _random
+
+        fps = self.video_fps or 30.0
+        dt = 1.0 / fps
+
+        # Build the tracker
+        config = ParticleFilterConfig(
+            particles_per_track=96,
+            initial_depth_m=5.0,      # reasonable indoor depth
+            min_assignment_iou=0.08,
+            max_missed_frames=int(fps * 2),  # retire after 2 seconds unseen
+            resampler="systematic",
+        )
+        motion_model = ConstantVelocityMotionModel(
+            position_process_std_m=0.03,
+            velocity_process_std_mps=0.02,
+            bbox_process_std_m=0.01,
+            mass_process_std_kg=0.005,
+        )
+        cost_fn = BackProjectionIoUCost()
+        self._pf_tracker = MultiObjectParticleFilter(
+            motion_model=motion_model,
+            cost_function=cost_fn,
+            config=config,
+            rng=_random.Random(42),
+        )
+
+        # Build a mapping of frame_index -> YOLO detection
+        yolo_by_frame = {}
+        for det in self.yolo_detections:
+            yolo_by_frame[det.frame_idx] = det
+
+        self.pf_track_history = []
+        self.pf_track_estimates = {}
+
+        for i, fd in enumerate(self.frame_data):
+            # --- Convert MASt3R camera-to-world -> world-to-camera for PF ---
+            pose_c2w = fd.pose  # (4,4) camera-to-world
+            pose_w2c = np.linalg.inv(pose_c2w)
+            R = pose_w2c[:3, :3]
+            t = pose_w2c[:3, 3]
+
+            camera_pose = PF_CameraPose(
+                rotation=(
+                    (float(R[0, 0]), float(R[0, 1]), float(R[0, 2])),
+                    (float(R[1, 0]), float(R[1, 1]), float(R[1, 2])),
+                    (float(R[2, 0]), float(R[2, 1]), float(R[2, 2])),
+                ),
+                translation=(float(t[0]), float(t[1]), float(t[2])),
+            )
+
+            H, W = fd.image_rgb.shape[:2]
+            cx, cy = fd.principal_point
+            intrinsics = PF_CameraIntrinsics(
+                width_px=W, height_px=H,
+                fx_px=float(fd.focal), fy_px=float(fd.focal),
+                cx_px=float(cx), cy_px=float(cy),
+            )
+
+            # --- Convert YOLO detections to PF Detection2D ---
+            detections_2d = []
+            yolo_det = yolo_by_frame.get(fd.index)
+            if yolo_det is not None and yolo_det.boxes is not None and len(yolo_det.boxes) > 0:
+                for j in range(len(yolo_det.class_names)):
+                    box = yolo_det.boxes[j]
+                    detections_2d.append(PF_Detection2D(
+                        label=yolo_det.class_names[j],
+                        aabb=PF_AABB2D(
+                            x_min=float(box[0]),
+                            y_min=float(box[1]),
+                            x_max=float(box[2]),
+                            y_max=float(box[3]),
+                        ),
+                        confidence=float(yolo_det.scores[j]),
+                    ))
+
+            # --- Build FrameContext and step ---
+            timestamp = fd.index / fps
+            frame_ctx = PF_FrameContext(
+                frame_index=fd.index,
+                timestamp_s=timestamp,
+                dt_s=dt,
+                camera_pose=camera_pose,
+                camera_intrinsics=intrinsics,
+                detections=tuple(detections_2d),
+            )
+
+            try:
+                result = self._pf_tracker.step(frame_ctx)
+                self.pf_track_history.append(result)
+
+                # Accumulate per-track time series
+                for track_id, est in result.estimates.items():
+                    if track_id not in self.pf_track_estimates:
+                        self.pf_track_estimates[track_id] = []
+                    self.pf_track_estimates[track_id].append((fd.index, est))
+
+            except Exception as e:
+                print(f"  WARN: PF step failed at frame {fd.index}: {e}")
+
+        n_tracks = len(self.pf_track_estimates)
+        total_obs = sum(len(v) for v in self.pf_track_estimates.values())
+        print(f"  PF tracking: {n_tracks} tracks, {total_obs} observations "
+              f"over {len(self.frame_data)} frames")
+
+        # Print track summary
+        for tid, estimates in self.pf_track_estimates.items():
+            last_est = estimates[-1][1]
+            pos = last_est.position
+            print(f"    {tid}: {len(estimates)} frames, "
+                  f"last pos=({pos[0]:.2f}, {pos[1]:.2f}, {pos[2]:.2f}), "
+                  f"bbox=({last_est.bounding_box[0]:.2f}, {last_est.bounding_box[1]:.2f}, {last_est.bounding_box[2]:.2f})")
+
+    # =====================================================================
     # STEP 3b: SAM3 VIDEO SEGMENTATION (pixel-perfect + tracking)
     # =====================================================================
     def step_3b_sam3_segmentation(self):
@@ -1137,6 +1316,20 @@ class World2DataPipeline:
             total_masks = sum(len(s.masks) for s in self.sam3_segmentations)
             print(f"  PASS: {total_masks} masks across "
                   f"{len(self.sam3_segmentations)} frames")
+
+            # Cross-reference SAM3 object IDs with PF track IDs
+            if self.pf_track_estimates and self.sam3_segmentations:
+                n_matched = 0
+                for seg_result in self.sam3_segmentations:
+                    for sam_id, sam_label in zip(
+                        seg_result.object_ids, seg_result.labels
+                    ):
+                        # Match SAM3 label to PF track by class name
+                        for tid in self.pf_track_estimates:
+                            if sam_label.lower() in tid.lower():
+                                n_matched += 1
+                                break
+                print(f"  Cross-ref: {n_matched} SAM3 objects matched to PF tracks")
         except Exception as e:
             print(f"  WARN: SAM3 segmentation failed: {e}")
             self.sam3_segmentations = []
@@ -1159,13 +1352,25 @@ class World2DataPipeline:
         try:
             analyzer = GeminiVideoAnalyzer(api_key=api_key)
 
-            # If we have YOLO detections, give Gemini context
+            # If we have YOLO detections, give Gemini context including PF tracks
             if self.yolo_detections:
                 mast3r_summary = {
                     "num_points": int(self.point_cloud.shape[0])
                         if self.point_cloud is not None else 0,
                     "num_frames": len(self.frame_data),
                 }
+                # Enrich with PF 3D tracking context
+                if self.pf_track_estimates:
+                    pf_summary = {}
+                    for tid, estimates in self.pf_track_estimates.items():
+                        last_est = estimates[-1][1]
+                        pf_summary[tid] = {
+                            "position_3d": list(last_est.position),
+                            "bounding_box_m": list(last_est.bounding_box),
+                            "frames_observed": len(estimates),
+                        }
+                    mast3r_summary["tracked_objects_3d"] = pf_summary
+                    print(f"  Enriching Gemini with {len(pf_summary)} PF 3D tracks")
                 self.scene_description = analyzer.analyze_scene_with_context(
                     self.video_path, self.yolo_detections, mast3r_summary
                 )
@@ -1207,6 +1412,7 @@ class World2DataPipeline:
         self.objects_4d = fusion.fuse()
 
         # Convert SceneObject4D to Object3D for backward compatibility
+        # Enrich with PF 3D tracking positions when available
         self.objects_3d = []
         for obj4d in self.objects_4d:
             obj3d = Object3D(
@@ -1221,6 +1427,30 @@ class World2DataPipeline:
                 first_seen_frame=obj4d.first_seen_frame,
                 last_seen_frame=obj4d.last_seen_frame,
             )
+
+            # Override with PF tracking data if a matching track exists
+            if self.pf_track_estimates:
+                best_match = None
+                for tid, estimates in self.pf_track_estimates.items():
+                    if obj4d.obj_type.lower() in tid.lower():
+                        if best_match is None or len(estimates) > len(
+                            self.pf_track_estimates.get(best_match, [])
+                        ):
+                            best_match = tid
+                if best_match:
+                    est_list = self.pf_track_estimates[best_match]
+                    last_est = est_list[-1][1]
+                    center = np.array(last_est.position)
+                    half_bbox = np.array(last_est.bounding_box) / 2.0
+                    obj3d.bbox_3d_min = center - half_bbox
+                    obj3d.bbox_3d_max = center + half_bbox
+                    obj3d.tracking_confidence = min(
+                        1.0, len(est_list) / max(len(self.frame_data), 1)
+                    )
+                    obj3d.first_seen_frame = est_list[0][0]
+                    obj3d.last_seen_frame = est_list[-1][0]
+                    obj3d.observation_count = len(est_list)
+
             self.objects_3d.append(obj3d)
 
         # Run reasoning engine (cross-model validation)
@@ -1829,6 +2059,238 @@ Return ONLY valid JSON:
         print(f"PASS: Saved scene graph -> {json_path}")
 
     # =====================================================================
+    # STEP 5b: LAYERED OPENUSD (Protocol-Compliant Output)
+    # =====================================================================
+    def step_5b_export_layered_usd(self):
+        """Export protocol-compliant layered USD scene bundle.
+
+        Writes:
+          scene/scene.usda  (assembly)
+          scene/layers/00_base.usda
+          scene/layers/10_inputs_run_<RUN>.usda
+          scene/layers/20_recon_run_<RUN>.usda   (cameras + per-frame cloud index)
+          scene/layers/25_yolo_run_<RUN>.usda    (YOLO observations)
+          scene/layers/30_tracks_run_<RUN>.usda  (entities + tracks)
+          scene/layers/40_events_run_<RUN>.usda  (events/relations)
+          scene/layers/90_overrides.usda
+          scene/layers/99_session.usda
+          scene/external/recon/frame_*.ply       (per-frame point clouds)
+          scene/external/recon/point_lineage_<RUN>.parquet
+        """
+        from world2data.usd_layers import (
+            USDLayerWriter, ProvenanceRecord, EntityRecord, EventRecord,
+            YOLOFrameRecord, PointCloudFrameRecord,
+            _generate_run_id, write_point_lineage,
+        )
+
+        # Determine output directory
+        base_dir = os.path.dirname(os.path.abspath(self.output_path))
+        scene_dir = os.path.join(base_dir, "scene")
+        run_id = _generate_run_id()
+
+        print(f"--- Step 5b: Writing Layered USD scene -> {scene_dir} ---")
+        print(f"  Run ID: {run_id}")
+
+        writer = USDLayerWriter(scene_dir)
+
+        # Compute video info
+        fps = self.video_fps or 30.0
+        n_frames = len(self.frame_data) if self.frame_data else 0
+        start_frame = self.frame_data[0].index if n_frames > 0 else 0
+        end_frame = self.frame_data[-1].index if n_frames > 0 else 0
+
+        # ---- 00 Base ----
+        writer.write_base_layer(fps=fps, start_frame=start_frame, end_frame=end_frame)
+
+        # ---- 10 Inputs ----
+        prov_ingest = ProvenanceRecord(
+            run_id=run_id, component="ingest",
+            model_name="world2data", model_version="0.3.0",
+        )
+        ply_path = self._derive_output_path(".ply")
+        writer.write_inputs_layer(
+            prov_ingest,
+            video_path=self.video_path,
+            point_cloud_path=ply_path if os.path.isfile(ply_path) else None,
+        )
+
+        # ---- Write per-frame PLY files + 20 Recon ----
+        prov_recon = ProvenanceRecord(
+            run_id=run_id, component="recon",
+            model_name="mast3r", model_version="ViTLarge_512",
+        )
+
+        # Build camera dicts and frame dicts for the writer
+        cameras = []
+        frame_dicts = []
+        for fd in self.frame_data:
+            cam = {
+                "pose": fd.pose,
+                "focal": fd.focal,
+                "frame_idx": fd.index,
+                "timestamp_sec": fd.index / fps,
+            }
+            cameras.append(cam)
+            frame_dicts.append({
+                "index": fd.index,
+                "pts3d": fd.pts3d,
+                "colors": fd.colors,
+                "confidence": fd.confidence,
+                "timestamp_sec": fd.index / fps,
+            })
+
+        # Write per-frame PLYs to external/recon/
+        frame_records = writer.write_per_frame_point_clouds(frame_dicts, run_id)
+
+        # Write recon layer with frame index (no inline dense points)
+        writer.write_recon_layer_with_frames(
+            prov_recon,
+            cameras=cameras,
+            frame_records=frame_records,
+            focals=self.focals,
+            fps=fps,
+        )
+
+        # ---- 25 YOLO Observations ----
+        if self.yolo_detections:
+            prov_yolo = ProvenanceRecord(
+                run_id=run_id, component="perception",
+                model_name="yolov8x-seg", model_version="8.4",
+            )
+            yolo_frames = []
+            for det in self.yolo_detections:
+                boxes = det.boxes.tolist() if det.boxes is not None and len(det.boxes) > 0 else []
+                yolo_frames.append(YOLOFrameRecord(
+                    frame_index=det.frame_idx,
+                    timestamp_sec=det.timestamp,
+                    image_width=int(det.boxes[0][2] + 100) if boxes else 640,  # approx
+                    image_height=int(det.boxes[0][3] + 100) if boxes else 480,
+                    labels=list(det.class_names),
+                    class_ids=det.classes.tolist() if det.classes is not None else [],
+                    scores=det.scores.tolist() if det.scores is not None else [],
+                    boxes_xyxy=[tuple(b) for b in boxes],
+                ))
+            writer.write_yolo_observations_layer(prov_yolo, yolo_frames)
+            print(f"  YOLO observations: {len(yolo_frames)} frames")
+
+        # ---- 30 Tracks (prefer PF tracks, fallback to static objects_3d) ----
+        entities = []
+        if self.pf_track_estimates:
+            # Use MultiObjectParticleFilter tracks -- real time-varying 3D positions
+            prov_tracking = ProvenanceRecord(
+                run_id=run_id, component="tracking",
+                model_name="particle_filter+yolov8x-seg", model_version="0.3.0",
+            )
+            for track_id, estimates in self.pf_track_estimates.items():
+                if not estimates:
+                    continue
+                # Build time-sampled positions from PF
+                frame_positions = {}
+                for (fidx, est) in estimates:
+                    frame_positions[fidx] = est.position
+
+                last_est = estimates[-1][1]
+                first_frame = estimates[0][0]
+                last_frame = estimates[-1][0]
+
+                # Compute bbox from PF bounding_box estimate
+                half = np.array(last_est.bounding_box) / 2.0
+                center = np.array(last_est.position)
+                bbox_min = tuple((center - half).tolist())
+                bbox_max = tuple((center + half).tolist())
+
+                entities.append(EntityRecord(
+                    uid=f"pf_{track_id}_{run_id}",
+                    entity_class=last_est.label,
+                    label=track_id,
+                    confidence=min(1.0, len(estimates) / max(n_frames, 1)),
+                    detected_by=["yolo", "particle_filter"],
+                    bbox_3d_min=bbox_min,
+                    bbox_3d_max=bbox_max,
+                    first_frame=first_frame,
+                    last_frame=last_frame,
+                    frame_positions=frame_positions,
+                ))
+            writer.write_tracks_layer(prov_tracking, entities, fps=fps)
+            print(f"  PF Entities: {len(entities)} (time-sampled tracks)")
+        elif self.objects_3d:
+            # Fallback: static objects from backprojection
+            prov_tracking = ProvenanceRecord(
+                run_id=run_id, component="tracking",
+                model_name="yolov8x-seg+gemini", model_version="0.3.0",
+            )
+            for i, obj in enumerate(self.objects_3d):
+                frame_positions = {}
+                if hasattr(obj, 'center') and n_frames > 0:
+                    for fd in self.frame_data:
+                        frame_positions[fd.index] = tuple(obj.center.tolist())
+
+                entities.append(EntityRecord(
+                    uid=f"entity_{run_id}_{i:03d}",
+                    entity_class=obj.obj_type,
+                    label=obj.entity,
+                    confidence=obj.tracking_confidence if hasattr(obj, 'tracking_confidence') else 0.5,
+                    detected_by=["mast3r", "gemini"],
+                    bbox_3d_min=tuple(obj.bbox_3d_min.tolist()),
+                    bbox_3d_max=tuple(obj.bbox_3d_max.tolist()),
+                    first_frame=start_frame,
+                    last_frame=end_frame,
+                    frame_positions=frame_positions,
+                ))
+            writer.write_tracks_layer(prov_tracking, entities, fps=fps)
+            print(f"  Static Entities: {len(entities)}")
+
+        # ---- 40 Events ----
+        events = []
+        if self.scene_graph and isinstance(self.scene_graph, dict):
+            for sc_obj in self.scene_graph.get("objects", []):
+                if isinstance(sc_obj, dict) and sc_obj.get("state_changes"):
+                    for sc in sc_obj["state_changes"]:
+                        events.append(EventRecord(
+                            uid=f"event_{run_id}_{len(events):03d}",
+                            predicate=sc.get("cause", "state_change"),
+                            subject_uid=sc_obj.get("entity", "unknown"),
+                            object_uid="",
+                            t_start=start_frame,
+                            t_end=end_frame,
+                            confidence=0.5,
+                            description=f"{sc.get('from', '?')} -> {sc.get('to', '?')}",
+                        ))
+        if events:
+            prov_events = ProvenanceRecord(
+                run_id=run_id, component="reasoning",
+                model_name="gemini-2.5-pro", model_version="2.5",
+            )
+            writer.write_events_layer(prov_events, events)
+            print(f"  Events: {len(events)}")
+
+        # ---- 90 Overrides (empty) ----
+        writer.write_overrides_layer()
+
+        # ---- 99 Session ----
+        writer.write_session_layer()
+
+        # ---- Assembly ----
+        scene_path = writer.write_assembly(
+            fps=fps, start_frame=start_frame, end_frame=end_frame,
+        )
+        print(f"PASS: Layered USD scene -> {scene_path}")
+
+        # ---- Point lineage parquet (PF-enriched when available) ----
+        lineage_path = write_point_lineage(
+            scene_dir, frame_dicts, run_id,
+            pf_track_estimates=self.pf_track_estimates if self.pf_track_estimates else None,
+            total_frames=n_frames,
+        )
+        if lineage_path:
+            print(f"PASS: Point lineage -> {lineage_path}")
+        else:
+            print("  WARN: pyarrow not available, skipping point lineage parquet")
+
+        self._layered_scene_path = str(scene_path)
+        return str(scene_path)
+
+    # =====================================================================
     # TEMPORAL RERUN RECORDING (.rrd)
     # Now includes: depth maps, 3D bounding boxes, state change colors
     # =====================================================================
@@ -1846,6 +2308,21 @@ Return ONLY valid JSON:
         accumulated_pts = []
         accumulated_colors = []
 
+        # Build quick lookups for 2D model outputs so they can be logged into
+        # the same .rrd as the 3D geometry/tracks.
+        yolo_by_frame_idx = {}
+        for det in (self.yolo_detections or []):
+            yolo_by_frame_idx[int(det.frame_idx)] = det
+
+        # SAM3 frame_idx is typically relative to the provided frame list (0..N-1),
+        # while MASt3R keyframes keep original video frame indices.
+        # Keep both mappings and use keyframe order as fallback.
+        sam_by_frame_idx = {}
+        sam_by_order = {}
+        for i, seg in enumerate(self.sam3_segmentations or []):
+            sam_by_order[i] = seg
+            sam_by_frame_idx[int(seg.frame_idx)] = seg
+
         # Color mapping for object types
         type_colors = {
             "door": [220, 40, 40],
@@ -1858,7 +2335,7 @@ Return ONLY valid JSON:
             "person": [255, 140, 0],
         }
 
-        for fd in self.frame_data:
+        for frame_order_idx, fd in enumerate(self.frame_data):
             video_frame = self.keyframe_timestamps[fd.index] \
                 if fd.index < len(self.keyframe_timestamps) else fd.index
             rr.set_time("keyframe", sequence=fd.index)
@@ -1871,18 +2348,49 @@ Return ONLY valid JSON:
                     fd.pts3d, colors=colors_u8, radii=0.003,
                 ))
 
-            # --- Accumulated point cloud ---
+            # --- Active map (sliding window, replaces old static accumulation) ---
+            # Keep a window of recent frames for the "active" map.
+            # Older points are faded/retired to show map freshness.
             accumulated_pts.append(fd.pts3d)
             accumulated_colors.append(fd.colors)
-            acc_pts = np.concatenate(accumulated_pts, axis=0)
-            acc_cols = np.concatenate(accumulated_colors, axis=0)
+
+            # Active window: last N frames (newer = brighter, older = dimmer)
+            ACTIVE_WINDOW = max(10, len(self.frame_data) // 2)
+            window_pts = accumulated_pts[-ACTIVE_WINDOW:]
+            window_cols = accumulated_colors[-ACTIVE_WINDOW:]
+            n_window = len(window_pts)
+
+            active_pts_list = []
+            active_cols_list = []
+            for wi, (wpts, wcols) in enumerate(zip(window_pts, window_cols)):
+                # Recency factor: 0.3 (oldest in window) to 1.0 (newest)
+                recency = 0.3 + 0.7 * (wi / max(n_window - 1, 1))
+                active_pts_list.append(wpts)
+                # Tint colors by recency
+                active_cols_list.append(np.clip(wcols * recency, 0, 1))
+
+            acc_pts = np.concatenate(active_pts_list, axis=0)
+            acc_cols = np.concatenate(active_cols_list, axis=0)
             if acc_pts.shape[0] > 200000:
                 idx = self.rng.choice(acc_pts.shape[0], 200000, replace=False)
                 acc_pts, acc_cols = acc_pts[idx], acc_cols[idx]
-            rr.log("world/accumulated", rr.Points3D(
+            rr.log("world/active_map", rr.Points3D(
                 acc_pts,
                 colors=(np.clip(acc_cols, 0, 1) * 255).astype(np.uint8),
                 radii=0.002,
+            ))
+
+            # Also log the full accumulation but with provenance coloring
+            # (each frame's points tinted by frame index for visual tracing)
+            all_pts = np.concatenate(accumulated_pts, axis=0)
+            all_cols = np.concatenate(accumulated_colors, axis=0)
+            if all_pts.shape[0] > 200000:
+                idx = self.rng.choice(all_pts.shape[0], 200000, replace=False)
+                all_pts, all_cols = all_pts[idx], all_cols[idx]
+            rr.log("world/full_history", rr.Points3D(
+                all_pts,
+                colors=(np.clip(all_cols, 0, 1) * 255).astype(np.uint8),
+                radii=0.001,
             ))
 
             # --- Camera ---
@@ -1897,6 +2405,30 @@ Return ONLY valid JSON:
             ))
             rr.log("world/camera/image", rr.Image(fd.image_rgb))
 
+            # --- 2D multi-model overlays (YOLO + SAM3) ---
+            yolo_det = yolo_by_frame_idx.get(int(fd.index))
+            if yolo_det is None and frame_order_idx < len(self.yolo_detections or []):
+                yolo_det = self.yolo_detections[frame_order_idx]
+
+            sam_seg = sam_by_frame_idx.get(int(fd.index))
+            if sam_seg is None:
+                sam_seg = sam_by_order.get(frame_order_idx)
+
+            if _HAS_FUSION and (yolo_det is not None or sam_seg is not None):
+                try:
+                    frame_bgr = cv2.cvtColor(fd.image_rgb, cv2.COLOR_RGB2BGR)
+                    annotated_bgr = VideoAnnotator.annotate_frame(
+                        frame_bgr,
+                        detections=yolo_det,
+                        segmentations=sam_seg,
+                        objects_4d=self.objects_4d,
+                    )
+                    annotated_rgb = cv2.cvtColor(annotated_bgr, cv2.COLOR_BGR2RGB)
+                    rr.log("world/camera/annotated", rr.Image(annotated_rgb))
+                    rr.log("input/annotated", rr.Image(annotated_rgb))
+                except Exception as e:
+                    print(f"  WARN: Could not log YOLO/SAM overlay for frame {fd.index}: {e}")
+
             # --- Depth map ---
             if fd.depth_map is not None:
                 rr.log("world/camera/depth", rr.DepthImage(fd.depth_map))
@@ -1908,37 +2440,66 @@ Return ONLY valid JSON:
                     [cam_positions], colors=[[255, 200, 0]], radii=0.005,
                 ))
 
-            # --- 3D Object bounding boxes with state change colors ---
-            for obj3d in self.objects_3d:
-                base_color = type_colors.get(obj3d.obj_type.lower(), [180, 180, 180])
+            # --- 3D Object bounding boxes (prefer PF time-varying, fallback static) ---
+            if self.pf_track_estimates:
+                # Particle filter tracks: objects MOVE through space over time
+                for track_id, estimates in self.pf_track_estimates.items():
+                    # Find the estimate closest to this frame
+                    best_est = None
+                    for (fidx, est) in estimates:
+                        if fidx <= fd.index:
+                            best_est = est
+                        else:
+                            break
+                    if best_est is None:
+                        continue
 
-                # Animate color based on state changes
-                color = list(base_color)
-                label = f"{obj3d.entity}: {obj3d.initial_state}"
+                    label_str = best_est.label
+                    base_color = type_colors.get(label_str.lower(), [180, 180, 180])
+                    # Compute track age fraction for fading
+                    n_obs = len([e for e in estimates if e[0] <= fd.index])
+                    conf = min(1.0, n_obs / max(len(self.frame_data) * 0.3, 1))
+                    alpha = max(100, int(conf * 255))
 
-                if obj3d.state_changes:
-                    t_frac = fd.index / max(len(self.frame_data) - 1, 1)
-                    for sc in obj3d.state_changes:
-                        time_map = {"early": 0.25, "mid": 0.5, "late": 0.75}
-                        sc_t = time_map.get(sc.get("time", "mid"), 0.5)
-                        if t_frac >= sc_t:
-                            color = [40, 255, 40]  # green = state changed
-                            label = f"{obj3d.entity}: {sc.get('to', '?')}"
-                elif obj3d.final_state != obj3d.initial_state:
-                    t_frac = fd.index / max(len(self.frame_data) - 1, 1)
-                    if t_frac > 0.5:
-                        color = [40, 255, 40]
-                        label = f"{obj3d.entity}: {obj3d.final_state}"
+                    rr.log(
+                        f"world/tracks/{self._safe_name(track_id)}",
+                        rr.Boxes3D(
+                            centers=[list(best_est.position)],
+                            sizes=[list(best_est.bounding_box)],
+                            labels=[f"{track_id} ({conf:.0%})"],
+                            colors=[base_color + [alpha]],
+                        ),
+                    )
+            else:
+                # Fallback: static objects from scene graph
+                for obj3d in self.objects_3d:
+                    base_color = type_colors.get(obj3d.obj_type.lower(), [180, 180, 180])
+                    color = list(base_color)
+                    label = f"{obj3d.entity}: {obj3d.initial_state}"
 
-                rr.log(
-                    f"world/objects/{self._safe_name(obj3d.entity)}",
-                    rr.Boxes3D(
-                        centers=[obj3d.center.tolist()],
-                        sizes=[obj3d.size.tolist()],
-                        labels=[f"{label} (track={obj3d.tracking_confidence:.2f})"],
-                        colors=[color],
-                    ),
-                )
+                    if obj3d.state_changes:
+                        t_frac = fd.index / max(len(self.frame_data) - 1, 1)
+                        for sc in obj3d.state_changes:
+                            time_map = {"early": 0.25, "mid": 0.5, "late": 0.75}
+                            sc_t = time_map.get(sc.get("time", "mid"), 0.5)
+                            if t_frac >= sc_t:
+                                color = [40, 255, 40]
+                                label = f"{obj3d.entity}: {sc.get('to', '?')}"
+                    elif obj3d.final_state != obj3d.initial_state:
+                        t_frac = fd.index / max(len(self.frame_data) - 1, 1)
+                        if t_frac > 0.5:
+                            color = [40, 255, 40]
+                            label = f"{obj3d.entity}: {obj3d.final_state}"
+
+                    rr.log(
+                        f"world/objects/{self._safe_name(obj3d.entity)}",
+                        rr.Boxes3D(
+                            centers=[obj3d.center.tolist()],
+                            sizes=[obj3d.size.tolist()],
+                            labels=[f"{label} (track={obj3d.tracking_confidence:.2f})"],
+                            colors=[color],
+                        ),
+                    )
 
         # --- Reasoning trace text log ---
         rr.set_time("keyframe", sequence=0)

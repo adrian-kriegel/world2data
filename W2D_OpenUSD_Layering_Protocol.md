@@ -1,7 +1,27 @@
 # World2Data — OpenUSD Layering Protocol (Prototype‑Ready Spec)
 
-**Status:** Prototype v0.1  
-**Scope:** Defines how multiple pipeline components author and compose OpenUSD outputs deterministically, merge‑safely, and with provenance.
+**Status:** Prototype v0.2 -- Implemented  
+**Scope:** Defines how multiple pipeline components author and compose OpenUSD outputs deterministically, merge-safely, and with provenance.
+
+### Implementation Status (2026-02-08)
+
+| Feature | Status | Module |
+|---|---|---|
+| Base layer (00_base.usda) | Done | `usd_layers.py:USDLayerWriter.write_base_layer()` |
+| Inputs layer (10_inputs) | Done | `usd_layers.py:USDLayerWriter.write_inputs_layer()` |
+| Recon layer with frame index (20_recon) | Done | `usd_layers.py:USDLayerWriter.write_recon_layer_with_frames()` |
+| YOLO observations layer (25_yolo) | Done | `usd_layers.py:USDLayerWriter.write_yolo_observations_layer()` |
+| Tracks layer (30_tracks) | Done | `usd_layers.py:USDLayerWriter.write_tracks_layer()` |
+| Events layer (40_events) | Done | `usd_layers.py:USDLayerWriter.write_events_layer()` |
+| Overrides layer (90_overrides) | Done | `usd_layers.py:USDLayerWriter.write_overrides_layer()` |
+| Session layer (99_session) | Done | `usd_layers.py:USDLayerWriter.write_session_layer()` |
+| Assembly (scene.usda) | Done | `usd_layers.py:USDLayerWriter.write_assembly()` |
+| Per-frame PLY externalization | Done | `usd_layers.py:USDLayerWriter.write_per_frame_point_clouds()` |
+| Per-frame camera poses (15.2) | Done | Part of `write_recon_layer_with_frames()` |
+| Point lineage parquet (4.2) | Done | `usd_layers.py:write_point_lineage()` |
+| Pipeline integration | Done | `controller.py:step_5b_export_layered_usd()` |
+| Rerun temporal active-map | Done | `controller.py:save_temporal_rrd()` (sliding-window active map) |
+| CI validation | Done | `usd_layers.py:validate_scene()` + `tests/test_layered_pipeline.py` |
 
 This protocol assumes a pipeline that ingests **video**, estimates **camera motion**, produces **point clouds**, detects and tracks **entities**, and infers **events/relations** (e.g., *“man drinks from mug”*) as a queryable scene graph.
 
@@ -301,9 +321,58 @@ A minimal CI step should verify:
 - writes only centroid trajectory + mean bounding box dimensions per track
 - provenance
 
+### 12.8 Gemini Video Analysis (input to `40_events_run_<RUNID>.usda`)
+- Uploads full video to Gemini (up to 100MB / ~11 min)
+- Produces: `SceneDescription` (objects, events, narrative, spatial_relations)
+- Output feeds into the Events/Relations layer
+- Provenance: model name, model version, params
+- Namespace: `/World/W2D/Events/**`
+
+### 12.9 Gemini Reasoning / Cross-Validation
+- Cross-validates YOLO detections, SAM3 segments, and PF tracks
+- Confidence formula: `0.4 * yolo_score + 0.3 * sam3_score + 0.3 * gemini_mentioned`
+- Human review flag when: confidence < 0.5, models disagree, or object seen in < 20% of frames
+- Enriches Track entities with confidence metadata
+
+### 12.10 SAM3 Video Segmentation (optional perception layer)
+- Consumes YOLO class names as text prompts
+- Produces: pixel-perfect masks + persistent object IDs across frames
+- Namespace: `/World/W2D/Observations/SAM3/**`
+
 ---
 
-## 13. Operational Workflow (How to “merge automatically”)
+## 13. Pipeline Execution Order (Producer Dependency Graph)
+
+The pipeline MUST execute producers in this order to satisfy data dependencies:
+
+```
+Step 1: Keyframe Extraction (video -> frames)
+Step 2: MASt3R Reconstruction (frames -> point clouds + cameras)
+  |
+  v
+Step 3a: YOLOv8 Detection (frames -> 2D boxes per frame)
+  |
+  v
+Step 3d: Particle Filter Tracking (YOLO + cameras + point clouds -> 3D tracks)
+  |       ** MUST run before Gemini/reasoning **
+  v
+Step 3b: SAM3 Segmentation (frames + YOLO classes -> masks + tracking IDs)
+Step 3c: Gemini Video Analysis (full video -> scene description)
+  |
+  v
+Step 4: Scene Fusion + Reasoning (all model outputs -> verified 4D scene graph)
+  |
+  v
+Step 5: USD Export (monolithic + layered scene bundle)
+Step 5b: Layered USD (protocol-compliant layers + per-frame PLY + lineage)
+Step 6: Rerun Recording (temporal 3D with active-map + PF tracks)
+Step 7: PLY Export
+```
+
+Key dependency: Step 3d (PF) provides 3D reference positions for all downstream
+reasoning. Without it, Gemini and the reasoning engine lack spatial anchoring.
+
+ Operational Workflow (How to “merge automatically”)
 
 1. Each component writes its own output layer file (immutable naming).
 2. A coordinator updates `scene.usda` subLayers list (or generates it from a manifest).
@@ -313,7 +382,7 @@ A minimal CI step should verify:
 
 ---
 
-## 14. Notes for Prototype Implementation
+## 16. Notes for Prototype Implementation
 
 - Start with **vanilla prims** (`Scope`, `Xform`, `Camera`) plus `w2d:*` attributes.
 - Add typed schemas later (USD plugin) once the contract stabilizes.

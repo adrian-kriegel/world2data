@@ -409,6 +409,211 @@ class USDLayerWriter:
         return path
 
     # -----------------------------------------------------------------
+    # Per-frame point cloud externalization helpers
+    # -----------------------------------------------------------------
+    def write_per_frame_point_clouds(
+        self,
+        frame_data: Sequence[dict],
+        run_id: str,
+    ) -> list[PointCloudFrameRecord]:
+        """Write per-frame point clouds as external PLY files.
+
+        Args:
+            frame_data: list of dicts with keys: index, pts3d (N,3), colors (N,3), timestamp_sec
+            run_id: for provenance
+
+        Returns:
+            List of PointCloudFrameRecord for use in the recon layer.
+        """
+        recon_dir = self.external_dir / "recon"
+        recon_dir.mkdir(parents=True, exist_ok=True)
+
+        records = []
+        for fd in frame_data:
+            idx = fd["index"]
+            pts = fd["pts3d"]
+            colors = fd.get("colors")
+            ts = fd.get("timestamp_sec", idx / 30.0)
+            n = pts.shape[0] if pts is not None else 0
+            if n == 0:
+                continue
+
+            fname = f"frame_{idx:06d}.ply"
+            ply_path = recon_dir / fname
+            _write_ply(ply_path, pts, colors)
+
+            records.append(PointCloudFrameRecord(
+                frame_index=idx,
+                timestamp_sec=ts,
+                points_asset_path=f"../external/recon/{fname}",
+                point_count=n,
+            ))
+        return records
+
+    # -----------------------------------------------------------------
+    # 20_recon extended: per-frame point cloud index in recon layer
+    # -----------------------------------------------------------------
+    def write_recon_layer_with_frames(
+        self,
+        provenance: ProvenanceRecord,
+        cameras: Sequence[dict] | None = None,
+        frame_records: Sequence[PointCloudFrameRecord] | None = None,
+        focals: Sequence[float] | None = None,
+        fps: float = 30.0,
+    ) -> Path:
+        """Write reconstruction layer with cameras + per-frame point cloud index.
+
+        Unlike write_recon_layer, this does NOT embed dense point arrays.
+        Instead it writes compact metadata prims pointing to external assets.
+        """
+        self._ensure_dirs()
+        Gf, Sdf, Usd, UsdGeom, _, Vt = _require_pxr()
+
+        fname = f"20_recon_run_{provenance.run_id}.usda"
+        path = self.layers_dir / fname
+        stage = Usd.Stage.CreateNew(str(path))
+
+        world = UsdGeom.Xform.Define(stage, "/World")
+        stage.SetDefaultPrim(world.GetPrim())
+        UsdGeom.Scope.Define(stage, "/World/W2D")
+        UsdGeom.Scope.Define(stage, "/World/W2D/Sensors")
+        UsdGeom.Scope.Define(stage, "/World/W2D/Reconstruction")
+
+        # --- Cameras with time-sampled poses ---
+        if cameras:
+            rig = UsdGeom.Xform.Define(stage, "/World/W2D/Sensors/Rig_01")
+            rig_prim = rig.GetPrim()
+            rig_prim.CreateAttribute(
+                "w2d:uid", Sdf.ValueTypeNames.String, custom=True
+            ).Set(f"rig_{provenance.run_id}")
+            rig_prim.CreateAttribute(
+                "w2d:producedByRunId", Sdf.ValueTypeNames.String, custom=True
+            ).Set(provenance.run_id)
+
+            # Camera pose frames scope (protocol 15.2)
+            UsdGeom.Scope.Define(stage, "/World/W2D/Sensors/CameraPoses")
+            UsdGeom.Scope.Define(stage, "/World/W2D/Sensors/CameraPoses/Frames")
+
+            for i, cam in enumerate(cameras):
+                # Standard camera Xform with time-sampled pose
+                cam_path = f"/World/W2D/Sensors/Rig_01/Cam_{i:03d}"
+                cam_xform = UsdGeom.Xform.Define(stage, cam_path)
+                cam_prim = cam_xform.GetPrim()
+
+                pose = np.array(cam.get("pose", np.eye(4)))
+                mat = Gf.Matrix4d(*pose.flatten().tolist())
+                frame_idx = cam.get("frame_idx", i)
+                xform_op = cam_xform.AddTransformOp()
+                xform_op.Set(mat, float(frame_idx))
+
+                focal = cam.get("focal", 500.0)
+                if focals and i < len(focals):
+                    focal = focals[i]
+                usd_cam = UsdGeom.Camera.Define(stage, f"{cam_path}/Camera")
+                usd_cam.GetFocalLengthAttr().Set(float(focal) * 0.036)
+
+                cam_prim.CreateAttribute(
+                    "w2d:uid", Sdf.ValueTypeNames.String, custom=True
+                ).Set(f"cam_{provenance.run_id}_{i:03d}")
+                cam_prim.CreateAttribute(
+                    "w2d:producedByRunId", Sdf.ValueTypeNames.String, custom=True
+                ).Set(provenance.run_id)
+
+                # Per-frame pose prim (protocol 15.2)
+                pose_path = f"/World/W2D/Sensors/CameraPoses/Frames/f_{frame_idx:06d}"
+                pose_scope = UsdGeom.Scope.Define(stage, pose_path)
+                pp = pose_scope.GetPrim()
+                pp.CreateAttribute("w2d:frameIndex", Sdf.ValueTypeNames.Int, custom=True).Set(frame_idx)
+                ts = cam.get("timestamp_sec", frame_idx / fps)
+                pp.CreateAttribute("w2d:timestampSec", Sdf.ValueTypeNames.Double, custom=True).Set(float(ts))
+                # Store rotation (3x3) and translation (3,)
+                R = pose[:3, :3]
+                t = pose[:3, 3]
+                pp.CreateAttribute("w2d:translation", Sdf.ValueTypeNames.Float3, custom=True).Set(
+                    Gf.Vec3f(*t.tolist())
+                )
+                pp.CreateAttribute("w2d:poseConvention", Sdf.ValueTypeNames.String, custom=True).Set("camera_to_world")
+                pp.CreateAttribute("w2d:producedByRunId", Sdf.ValueTypeNames.String, custom=True).Set(provenance.run_id)
+
+        # --- Per-frame point cloud index (protocol 15.4) ---
+        if frame_records:
+            pcf_scope = UsdGeom.Scope.Define(
+                stage, "/World/W2D/Reconstruction/PointCloudFrames"
+            )
+            for rec in frame_records:
+                prim_path = f"/World/W2D/Reconstruction/PointCloudFrames/f_{rec.frame_index:06d}"
+                scope = UsdGeom.Scope.Define(stage, prim_path)
+                p = scope.GetPrim()
+                p.CreateAttribute("w2d:frameIndex", Sdf.ValueTypeNames.Int, custom=True).Set(rec.frame_index)
+                p.CreateAttribute("w2d:timestampSec", Sdf.ValueTypeNames.Double, custom=True).Set(rec.timestamp_sec)
+                p.CreateAttribute("w2d:pointsAsset", Sdf.ValueTypeNames.Asset, custom=True).Set(rec.points_asset_path)
+                p.CreateAttribute("w2d:pointCount", Sdf.ValueTypeNames.Int, custom=True).Set(rec.point_count)
+                p.CreateAttribute("w2d:pointsFormat", Sdf.ValueTypeNames.String, custom=True).Set(rec.points_format)
+                p.CreateAttribute("w2d:producedByRunId", Sdf.ValueTypeNames.String, custom=True).Set(provenance.run_id)
+
+        self._write_provenance(stage, provenance)
+        stage.GetRootLayer().Save()
+        self._layer_files.append(fname)
+        return path
+
+    # -----------------------------------------------------------------
+    # 25_yolo_run_<RUNID>.usda -- YOLO observations (protocol 15.3)
+    # -----------------------------------------------------------------
+    def write_yolo_observations_layer(
+        self,
+        provenance: ProvenanceRecord,
+        frames: Sequence[YOLOFrameRecord],
+    ) -> Path:
+        """Write YOLO per-frame 2D detection observations."""
+        self._ensure_dirs()
+        Gf, Sdf, Usd, UsdGeom, _, Vt = _require_pxr()
+
+        fname = f"25_yolo_run_{provenance.run_id}.usda"
+        path = self.layers_dir / fname
+        stage = Usd.Stage.CreateNew(str(path))
+
+        world = UsdGeom.Xform.Define(stage, "/World")
+        stage.SetDefaultPrim(world.GetPrim())
+        UsdGeom.Scope.Define(stage, "/World/W2D")
+        UsdGeom.Scope.Define(stage, "/World/W2D/Observations")
+        UsdGeom.Scope.Define(stage, "/World/W2D/Observations/YOLO")
+        UsdGeom.Scope.Define(stage, "/World/W2D/Observations/YOLO/Frames")
+
+        for fr in frames:
+            prim_path = f"/World/W2D/Observations/YOLO/Frames/f_{fr.frame_index:06d}"
+            scope = UsdGeom.Scope.Define(stage, prim_path)
+            p = scope.GetPrim()
+
+            p.CreateAttribute("w2d:frameIndex", Sdf.ValueTypeNames.Int, custom=True).Set(fr.frame_index)
+            p.CreateAttribute("w2d:timestampSec", Sdf.ValueTypeNames.Double, custom=True).Set(fr.timestamp_sec)
+            p.CreateAttribute("w2d:imageWidth", Sdf.ValueTypeNames.Int, custom=True).Set(fr.image_width)
+            p.CreateAttribute("w2d:imageHeight", Sdf.ValueTypeNames.Int, custom=True).Set(fr.image_height)
+            p.CreateAttribute("w2d:detectionCount", Sdf.ValueTypeNames.Int, custom=True).Set(len(fr.labels))
+            p.CreateAttribute("w2d:producedByRunId", Sdf.ValueTypeNames.String, custom=True).Set(provenance.run_id)
+
+            if fr.labels:
+                p.CreateAttribute("w2d:labels", Sdf.ValueTypeNames.StringArray, custom=True).Set(fr.labels)
+            if fr.class_ids:
+                p.CreateAttribute("w2d:classIds", Sdf.ValueTypeNames.IntArray, custom=True).Set(fr.class_ids)
+            if fr.scores:
+                p.CreateAttribute("w2d:scores", Sdf.ValueTypeNames.FloatArray, custom=True).Set(
+                    [float(s) for s in fr.scores]
+                )
+            if fr.boxes_xyxy:
+                # Flatten to float4 array: [x1,y1,x2,y2, x1,y1,x2,y2, ...]
+                flat = []
+                for box in fr.boxes_xyxy:
+                    flat.append(Gf.Vec4f(*[float(v) for v in box[:4]]))
+                p.CreateAttribute("w2d:boxesXYXY", Sdf.ValueTypeNames.Float4Array, custom=True).Set(
+                    Vt.Vec4fArray(flat)
+                )
+
+        self._write_provenance(stage, provenance)
+        stage.GetRootLayer().Save()
+        self._layer_files.append(fname)
+        return path
+
+    # -----------------------------------------------------------------
     # 30_tracks_run_<RUNID>.usda -- entities + tracks
     # -----------------------------------------------------------------
     def write_tracks_layer(
@@ -799,6 +1004,167 @@ def build_layered_scene(
         fps=fps, start_frame=start_frame, end_frame=end_frame,
     )
     return scene_path
+
+
+# =========================================================================
+# PLY helper (write compact per-frame files)
+# =========================================================================
+
+def _write_ply(path: Path, points: np.ndarray, colors: np.ndarray | None = None):
+    """Write a minimal ASCII PLY file for a single frame's points."""
+    n = points.shape[0]
+    has_color = colors is not None and colors.shape[0] == n
+    path = Path(path)
+    with open(path, "w") as f:
+        f.write("ply\nformat ascii 1.0\n")
+        f.write(f"element vertex {n}\n")
+        f.write("property float x\nproperty float y\nproperty float z\n")
+        if has_color:
+            f.write("property uchar red\nproperty uchar green\nproperty uchar blue\n")
+        f.write("end_header\n")
+        for i in range(n):
+            x, y, z = points[i]
+            line = f"{x:.6f} {y:.6f} {z:.6f}"
+            if has_color:
+                r, g, b = np.clip(colors[i] * 255, 0, 255).astype(int)
+                line += f" {r} {g} {b}"
+            f.write(line + "\n")
+
+
+# =========================================================================
+# Point Lineage (Parquet) -- Protocol §4.2
+# =========================================================================
+
+def write_point_lineage(
+    output_dir: str | Path,
+    frame_data: Sequence[dict],
+    run_id: str,
+    pf_track_estimates: dict | None = None,
+    total_frames: int | None = None,
+) -> Path | None:
+    """Write a point lineage parquet file for a pipeline run.
+
+    Each row traces a single 3D point back to its source frame, with optional
+    PF track association for lifecycle management.
+
+    When ``pf_track_estimates`` is provided (from MultiObjectParticleFilter),
+    points are associated with the nearest tracked object and their state is
+    managed through a lifecycle:
+      - "active"  -- point belongs to the most recent frame window
+      - "stale"   -- point is older than the active window but still within
+                     the track's observed lifetime
+      - "retired" -- point is outside any active track's observation window
+
+    This allows downstream consumers (Rerun, USD viewers) to animate/filter
+    points based on freshness rather than treating them as a static dump.
+
+    Args:
+        output_dir: scene bundle root (contains external/)
+        frame_data: list of dicts with keys: index, pts3d (N,3), colors (N,3),
+                    confidence (N,), timestamp_sec
+        run_id: pipeline run ID
+        pf_track_estimates: optional dict {track_id: [(frame_idx, TrackEstimate), ...]}
+        total_frames: total number of frames in the sequence (for lifecycle calc)
+    """
+    if not _HAS_PARQUET:
+        return None
+
+    output_dir = Path(output_dir)
+    recon_dir = output_dir / "external" / "recon"
+    recon_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build spatial index for PF tracks if available
+    # For each frame, build a list of (track_id, position_3d, bbox_3d)
+    pf_frame_tracks: dict[int, list] = {}
+    if pf_track_estimates:
+        for track_id, estimates in pf_track_estimates.items():
+            for (fidx, est) in estimates:
+                entry = (track_id, np.array(est.position), np.array(est.bounding_box))
+                pf_frame_tracks.setdefault(fidx, []).append(entry)
+
+    # Determine active window (last 30% of frames)
+    if total_frames is None:
+        total_frames = max((fd["index"] for fd in frame_data), default=0) + 1
+    active_window_start = int(total_frames * 0.7)
+
+    rows = {
+        "point_uid": [],
+        "frame_index_origin": [],
+        "timestamp_sec_origin": [],
+        "source_points_asset": [],
+        "x": [], "y": [], "z": [],
+        "r": [], "g": [], "b": [],
+        "confidence": [],
+        "state": [],
+        "track_id": [],  # NEW: associated PF track (or "untracked")
+    }
+
+    for fd in frame_data:
+        idx = fd["index"]
+        pts = fd["pts3d"]
+        colors = fd.get("colors")
+        conf = fd.get("confidence")
+        ts = fd.get("timestamp_sec", idx / 30.0)
+        asset = f"frame_{idx:06d}.ply"
+        n = pts.shape[0] if pts is not None else 0
+
+        # Get active tracks for this frame
+        frame_tracks = pf_frame_tracks.get(idx, [])
+
+        for j in range(n):
+            # Deterministic point UID
+            uid_seed = f"{run_id}:{idx}:{asset}:{j}"
+            uid = hashlib.sha256(uid_seed.encode()).hexdigest()[:16]
+            rows["point_uid"].append(uid)
+            rows["frame_index_origin"].append(idx)
+            rows["timestamp_sec_origin"].append(ts)
+            rows["source_points_asset"].append(asset)
+
+            px, py, pz = float(pts[j, 0]), float(pts[j, 1]), float(pts[j, 2])
+            rows["x"].append(px)
+            rows["y"].append(py)
+            rows["z"].append(pz)
+
+            if colors is not None and j < colors.shape[0]:
+                c = np.clip(colors[j], 0, 1)
+                rows["r"].append(float(c[0]))
+                rows["g"].append(float(c[1]))
+                rows["b"].append(float(c[2]))
+            else:
+                rows["r"].append(0.5)
+                rows["g"].append(0.5)
+                rows["b"].append(0.5)
+
+            base_conf = float(conf[j]) if conf is not None and j < len(conf) else 0.5
+            rows["confidence"].append(base_conf)
+
+            # Associate point with nearest PF track and compute lifecycle state
+            best_track = "untracked"
+            if frame_tracks:
+                pt = np.array([px, py, pz])
+                min_dist = float("inf")
+                for (tid, track_pos, track_bbox) in frame_tracks:
+                    dist = float(np.linalg.norm(pt - track_pos))
+                    # Within bounding box radius = tracked
+                    radius = float(np.linalg.norm(track_bbox)) / 2.0
+                    if dist < radius and dist < min_dist:
+                        min_dist = dist
+                        best_track = tid
+
+            rows["track_id"].append(best_track)
+
+            # Lifecycle state
+            if idx >= active_window_start:
+                rows["state"].append("active")
+            elif best_track != "untracked":
+                rows["state"].append("stale")
+            else:
+                rows["state"].append("retired")
+
+    table = pa.table(rows)
+    parquet_path = recon_dir / f"point_lineage_{run_id}.parquet"
+    pq.write_table(table, str(parquet_path))
+    return parquet_path
 
 
 # =========================================================================

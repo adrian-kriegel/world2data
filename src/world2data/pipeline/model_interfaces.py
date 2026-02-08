@@ -274,10 +274,17 @@ class SAM3Segmenter:
         default_dtype = torch.bfloat16 if str(device).startswith("cuda") else torch.float32
         self.dtype = dtype or default_dtype
         self.model_name = model_name
+        # Token resolution: env var > cached login (huggingface-cli login)
         self.hf_token = (
             os.environ.get("HF_TOKEN")
             or os.environ.get("HUGGINGFACE_HUB_TOKEN")
         )
+        if not self.hf_token:
+            try:
+                from huggingface_hub import get_token
+                self.hf_token = get_token()
+            except Exception:
+                pass
 
         logger.info(f"Loading SAM3 model: {model_name}...")
         self.model = Sam3VideoModel.from_pretrained(

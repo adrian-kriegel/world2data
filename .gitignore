@@ -27,7 +27,16 @@ data/inputs/*.avi
 data/inputs/*.mov
 # Model weights (large, downloaded on first run)
 data/models/*.pt
-# All generated outputs
+data/models/*.pth
+data/models/*.bin
+data/models/*.safetensors
+data/models/*.onnx
+
+# HuggingFace cache (SAM3, YOLO weights, etc.)
+.cache/
+*.ckpt
+
+# All generated outputs (USD scene bundles, PLY, parquet, RRD)
 data/outputs/*
 # But keep the directory structure markers
 !data/inputs/.gitkeep
@@ -56,3 +65,7 @@ w2d_cache_*/
 # Testenvironment generated artifacts
 testenvironment/**/outputs/
 testenvironment/**/.venv/
+
+# External local tooling (not part of project source)
+tools/
+tolls/

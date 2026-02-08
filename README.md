@@ -186,12 +186,43 @@ uv sync
 # 2. Set your API key
 echo "GOOGLE_API_KEY=your_key_here" > .env
 
-# 3. Run on a video (multi-model v2 pipeline)
-uv run world2data-demo --video data/inputs/your_video.mp4
+# 3. Run the full pipeline on a video (10fps keyframes)
+uv run world2data-demo --video data/inputs/video_2026-02-08_12-12-15.mp4 --output data/outputs/investor_demo --fps 10
 
-# 4. View the interactive 3D recording
-uv run rerun scene.rrd
+# 4. View the interactive 3D temporal recording
+uv run rerun data/outputs/investor_demo/investor_demo.rrd
 ```
+
+## Layered OpenUSD Output (Protocol v0.2)
+
+Every pipeline run now produces a **protocol-compliant layered scene bundle**:
+
+```
+data/outputs/investor_demo/scene/
+  scene.usda                           # Assembly -- open this file
+  layers/
+    00_base.usda                       # Conventions + namespace skeleton
+    10_inputs_run_<RUN>.usda           # Video/cloud refs
+    20_recon_run_<RUN>.usda            # Cameras + per-frame cloud index
+    25_yolo_run_<RUN>.usda             # YOLO per-frame detections
+    30_tracks_run_<RUN>.usda           # Entities + time-sampled tracks
+    40_events_run_<RUN>.usda           # Inferred events/relations
+    90_overrides.usda                  # Human QA corrections (empty template)
+    99_session.usda                    # Per-user local edits
+  external/
+    inputs/                            # Copied video file
+    recon/
+      frame_000000.ply                 # Per-frame point clouds
+      frame_000001.ply
+      ...
+      point_lineage_<RUN>.parquet      # Point provenance table
+```
+
+Key properties:
+- **No dense point arrays in protocol layers** -- heavy geometry is externalized as PLY files
+- **Every point is traceable** to its source frame via the lineage parquet
+- **Temporal point clouds** -- the Rerun viewer shows active-map (sliding window) and full-history views
+- **Each entity has a stable `w2d:uid`** and provenance linking to the exact run + model version
 
 ## Pipeline Architecture (The "Ralph Loop" v2)
 

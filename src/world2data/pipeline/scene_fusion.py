@@ -774,6 +774,7 @@ class VideoAnnotator:
     def log_to_rerun(cls, frame_rgb: np.ndarray, detections=None,
                      segmentations=None, frame_idx: int = 0):
         """Log annotated frame to Rerun as input/annotated panel."""
+        import cv2
         import rerun as rr
 
         # Annotate

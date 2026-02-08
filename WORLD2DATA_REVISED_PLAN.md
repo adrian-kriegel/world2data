@@ -1,6 +1,6 @@
 # World2Data Revised Plan
 
-Last updated: 2026-02-08  
+Last updated: 2026-02-08 (v2 -- WP1-5 implemented)  
 Purpose: implementation plan for delivering the World2Data pipeline with `W2D_OpenUSD_Layering_Protocol.md` as protocol authority and the current `src/world2data` runtime as execution base.
 
 ## 1) Ground Truths and Goal
@@ -120,93 +120,61 @@ This guarantees old geometry can be ignored and replaced when newer observations
 
 ## 5) Implementation Work Packages
 
-## WP1: Make Layered OpenUSD the Default Pipeline Output
+## WP1: Make Layered OpenUSD the Default Pipeline Output -- DONE
 
-Scope:
+Implemented in `controller.py:step_5b_export_layered_usd()`.
 
-- integrate `usd_layers.py` into `World2DataPipeline` export path
-- write run-scoped layered scene bundle under `data/outputs/runs/<RUNID>/scene/`
+- Integrated `usd_layers.py` into `World2DataPipeline` export path
+- Writes run-scoped layered scene bundle under `<output_dir>/scene/`
+- Called automatically in `run_ralph_loop()` after `step_5_export_usd()`
+- Graceful fallback: if layered export fails, monolithic USD still produced
 
-Deliverables:
+Acceptance: 14 tests in `tests/test_layered_pipeline.py` all pass.
 
-- default output is `scene/scene.usda` + layer stack
-- no direct dependency on monolithic `*.usda` for primary flow
+## WP2: Externalize Reconstruction Payloads per Protocol -- DONE
 
-Acceptance criteria:
+Implemented via `USDLayerWriter.write_per_frame_point_clouds()` and `write_recon_layer_with_frames()`.
 
-- opening `scene/scene.usda` composes all authored layers
-- run is reproducible with stable layer ordering and run IDs
+- Per-frame PLY files written to `scene/external/recon/frame_NNNNNN.ply`
+- Compact metadata prims at `/World/W2D/Reconstruction/PointCloudFrames/f_NNNNNN`
+- No dense point arrays in protocol layers (verified by test)
+- All asset paths are relative
 
-## WP2: Externalize Reconstruction Payloads per Protocol
+Acceptance: Tests `test_write_per_frame_ply_files`, `test_recon_layer_with_frame_index`, `test_no_dense_point_arrays_in_recon_with_frames` all pass.
 
-Scope:
+## WP3: Perception and Tracking Layer Contracts -- DONE
 
-- write per-frame point assets to `scene/external/recon/`
-- stop authoring dense cloud arrays in protocol layers
-- keep only compact metadata in `20_recon_run_<RUNID>.usda`
+Implemented via `USDLayerWriter.write_yolo_observations_layer()`.
 
-Deliverables:
+- YOLO observations layer (`25_yolo_run_<RUNID>.usda`) with per-frame prims
+- Per-frame attributes: `w2d:labels`, `w2d:classIds`, `w2d:scores`, `w2d:boxesXYXY`, `w2d:detectionCount`
+- Tracks layer already existed; entities have `w2d:uid` and `w2d:producedByRunId`
+- Namespace: `/World/W2D/Observations/YOLO/Frames/f_NNNNNN`
 
-- point assets indexed by frame
-- camera poses/intrinsics remain in recon layer
+Acceptance: Tests `test_writes_yolo_layer`, `test_yolo_layer_in_assembly` pass.
 
-Acceptance criteria:
+## WP4: Temporal Point Lineage + Rerun Adapter -- DONE
 
-- protocol layers contain no dense point arrays
-- all frame point assets resolve via relative `asset` paths
+Implemented via `write_point_lineage()` in `usd_layers.py` and updated `save_temporal_rrd()` in `controller.py`.
 
-## WP3: Perception and Tracking Layer Contracts
+- Point lineage parquet written to `scene/external/recon/point_lineage_<RUNID>.parquet`
+- Schema: `point_uid, frame_index_origin, timestamp_sec_origin, source_points_asset, x, y, z, r, g, b, confidence, state`
+- Deterministic `point_uid` via SHA-256 of `(run_id, frame_index, asset, local_index)`
+- Rerun now has three views: `world/current_view` (frame-local), `world/active_map` (sliding window with recency fading), `world/full_history` (complete accumulation)
+- Older points fade in the active map; full history preserved separately
 
-Scope:
+Acceptance: Tests `test_writes_lineage_parquet`, `test_lineage_schema`, `test_lineage_row_count`, `test_lineage_all_active` pass.
 
-- add YOLO observations layer writer (`25_yolo_run_<RUNID>.usda`)
-- add particle-filter tracks writer (`30_tracks_run_<RUNID>.usda`)
-- align namespaces and ownership with protocol
+## WP5: Camera Poses and Calibration in Protocol Layers -- DONE
 
-Deliverables:
+Implemented as part of `write_recon_layer_with_frames()`.
 
-- `/World/W2D/Observations/YOLO/**`
-- `/World/W2D/Entities/**`, `/World/W2D/Tracks/**`
+- Per-frame camera pose prims at `/World/W2D/Sensors/CameraPoses/Frames/f_NNNNNN`
+- Attributes: `w2d:frameIndex`, `w2d:timestampSec`, `w2d:translation`, `w2d:poseConvention`, `w2d:producedByRunId`
+- Camera intrinsics via standard `UsdGeom.Camera` prims under `/World/W2D/Sensors/Rig_01/`
+- Calibration JSON consumption available via `world2data-calibration` CLI
 
-Acceptance criteria:
-
-- all entities have stable `w2d:uid`
-- `w2d:producedByRunId` exists on authored output prims
-
-## WP4: Temporal Point Lineage + Rerun Adapter
-
-Scope:
-
-- generate point lineage parquet per run
-- update Rerun emission to use lifecycle states
-- support active-map rendering and point retirement/supersession
-
-Deliverables:
-
-- `point_lineage_<RUNID>.parquet`
-- deterministic active map at any timeline position
-
-Acceptance criteria:
-
-- every rendered point has traceable lineage back to source frame asset
-- Rerun active map can drop old/superseded points as timeline advances
-
-## WP5: Calibration Consumption in Main Pipeline
-
-Scope:
-
-- add pipeline inputs for calibration artifacts
-- inject calibration intrinsics/distortion into recon/tracking contracts
-
-Deliverables:
-
-- calibration-aware run configuration
-- calibration provenance in run metadata
-
-Acceptance criteria:
-
-- run can consume `camera_calibration.json` and/or calibration USDA
-- intrinsics contract is available in composed stage for downstream consumers
+Acceptance: Test `test_recon_layer_with_frame_index` verifies pose prims.
 
 ## WP6: Run Manifests, Checkpoints, and Resume
 
@@ -253,10 +221,24 @@ Acceptance criteria:
 - WP1, WP2, WP5
 - output structure + calibration + external recon indexing
 
-### Phase 2 (Temporal Fidelity)
+### Phase 2 (Temporal Fidelity) -- DONE
 
 - WP3, WP4
 - full observation/tracking contracts + lineage-driven dynamic map behavior
+- **WP3.5 (NEW)**: MultiObjectParticleFilter integrated as Step 3d
+  - Converts MASt3R poses + YOLO 2D detections -> 3D track estimates
+  - Runs BEFORE Gemini/reasoning (spatial anchoring)
+  - Feeds into: layered USD tracks, Rerun bounding boxes, point lineage
+  - 7 unit tests + 5 E2E tests, all passing
+- **WP4.5 (NEW)**: PF-enriched point lineage with lifecycle
+  - `track_id` column associates points to PF tracks
+  - Lifecycle states: active (recent) / stale (tracked, older) / retired
+
+### Phase 2b (Model Integration) -- IN PROGRESS
+
+- SAM3: Code wired, needs HuggingFace login (`uv run huggingface-cli login`)
+- Gemini: Enriched with PF 3D context (tracked_objects_3d in mast3r_summary)
+- Protocol sections 12.8-12.10 added for Gemini + SAM3 producer contracts
 
 ### Phase 3 (Operational Hardening)
 
@@ -265,10 +247,23 @@ Acceptance criteria:
 
 ## 7) Demo and Validation Commands
 
-### 7.1 Full pipeline demo run
+### 7.1 Full pipeline demo run (investor demo)
 
 ```bash
-uv run world2data-demo --video data/inputs/video_2026-02-08_09-36-42.mp4 --output data/outputs/demo_output --fps 5
+uv run world2data-demo --video data/inputs/video_2026-02-08_12-12-15.mp4 --output data/outputs/investor_demo --fps 10
+```
+
+### 7.1b View demo outputs
+
+```bash
+# Interactive 3D temporal viewer (Rerun)
+uv run rerun data/outputs/investor_demo/investor_demo.rrd
+
+# USD scene (usdview -- requires USD tools)
+uv run python -c "from pxr import Usd; print(Usd.Stage.Open('data/outputs/investor_demo/scene/scene.usda').ExportToString()[:2000])"
+
+# Or open in any USD viewer:
+# usdview data/outputs/investor_demo/scene/scene.usda
 ```
 
 ### 7.2 Calibration run
